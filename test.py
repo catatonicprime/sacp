@@ -1,3 +1,4 @@
+import code
 import re
 import pygments
 from pygments.lexers.configs import ApacheConfLexer
@@ -24,11 +25,12 @@ class Node:
     [ServerName][ server][\n] -> children / pretokens
     [</VirtualHost][>][\n] -> posttokens
     """
-    def __init__(self, pretokens, children, posttokens, parent=None):
+    def __init__(self, pretokens, children, posttokens, closeTag=False, parent=None):
         self._parent = parent
         self._pretokens = pretokens
         self._children = children
         self._posttokens = posttokens
+        self.closeTag = closeTag
 
     @property
     def tokens(self):
@@ -97,33 +99,39 @@ class ConfigFile:
             if token[0] is Token.Error:
                 raise ValueError("Config has errors, bailing.")
             node.pretokens.append(token)
-            # Nodes don't have types until their first non-whitespace token is matched.
+           
+            # Nodes don't have types until their first non-whitespace token is matched, this aggregates all the
+            # whitespace tokens to the front of the node.
             if not node.type:
                 continue
+
             # The node has a type, the lexer will return either a Token.Text with an empty OR newline string before
             # the next node info is available.
             if token[0] is Token.Text and token[1] == '':
                 return node
             if token[0] is Token.Text and token[1] == '\n':
                 return node
+
             # When handling Tag tokens, e.g. nested components, we need to know if we're at the start OR end of the Tag.
             # Check for </ first and flag that this node will be the closing tag or not, if so and > is encountered
-            # then return this node since it is complete.
+            # then return this node since it is complete, this closes the scoped directive.
             if token[0] is Token.Name.Tag and token[1][0] == '<' and token[1][1] == '/':
-                closeTag = True
-            if token[0] is Token.Name.Tag and token[1][0] == '>' and closeTag:
-                return node
-            # We're starting a Tag instead, begin building out the children nodes for this node.
-            elif token[0] is Token.Name.Tag and token[1][0] == '>':
+                node.closeTag = True
+            if token[0] is Token.Name.Tag and token[1][0] == '>':
+                # If we're closing a tag it's time to return this node.
+                if node.closeTag:
+                    return node
+
+                # Otherwise, we're starting a Tag instead, begin building out the children nodes for this node.
                 child = self.ParseNode(parent=node)
-                while child:
+                while child and child.closeTag == False:
                     node.children.append(child)
                     child = self.ParseNode(parent=node)
-                # The last node should always be the </tag>, so we'll pop it off & migrate it's tokens into this nodes
-                # posttokens.
-                closeNode = node.children.pop()
-                for pt in closeNode.tokens:
-                    node.posttokens.append(pt)
+
+                # If the child was a </tag> node it, migrate it's tokens into posttokens for this node.
+                if child and child.closeTag:
+                    for pt in child.tokens:
+                        node.posttokens.append(pt)
                 return node
         return None
 
@@ -136,6 +144,8 @@ class ConfigFile:
         return s
 
 # Get a stream of tokens!
-cf = ConfigFile(file="httpd.conf")
-print(cf)
+cf = ConfigFile(file="httpd_short.conf")
+print(cf, end="")
+
+code.interact(local=locals())
 
