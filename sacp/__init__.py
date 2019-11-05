@@ -108,7 +108,7 @@ class ConfigFile:
             # the next node info is available.
             if token[0] is Token.Text and token[1] == '':
                 return node
-            if token[0] is Token.Text and token[1] == '\n':
+            if token[0] is Token.Text and '\n' in token[1]:
                 return node
 
             # When handling Tag tokens, e.g. nested components, we need to know if we're at the start OR end of the Tag.
