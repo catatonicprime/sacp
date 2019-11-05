@@ -12,8 +12,8 @@ class Node:
         /     |     \
     pre - children - post
 
-    When processing tokens, e.g. when rendering, we process pre tokens first, then the children nodes, then the post
-    tokens.
+    When processing tokens, e.g. when rendering, we process pre tokens first,
+    then the children nodes, then the post tokens.
 
     Example:
     <VirtualHost *:80>
@@ -34,7 +34,8 @@ class Node:
     @property
     def tokens(self):
         """
-        :return: List of all the tokens for this node & it's children concatenated together.
+        :return: List of all the tokens for this node & it's children
+                 concatenated together.
         """
         tokenList = []
         for token in self._pretokens:
@@ -87,28 +88,33 @@ class Parser:
 
     def ParseNode(self, parent=None):
         node = Node([], [], [], parent=parent)
-        # Flag that indicates we will be exiting a scoped directive after this node completes building.
+        # Flag that indicates we will be exiting a scoped directive after this
+        # node completes building.
         closeTag = False
         for token in self._stream:
             if token[0] is Token.Error:
                 raise ValueError("Config has errors, bailing.")
             node.pretokens.append(token)
-           
-            # Nodes don't have types until their first non-whitespace token is matched, this aggregates all the
-            # whitespace tokens to the front of the node.
+
+            # Nodes don't have types until their first non-whitespace token is
+            # matched, this aggregates all the whitespace tokens to the front
+            # of the node.
             if not node.type:
                 continue
 
-            # The node has a type, the lexer will return either a Token.Text with an empty OR newline string before
-            # the next node info is available.
+            # The node has a type, the lexer will return either a Token.Text
+            # with an empty OR newline string before the next node info is
+            # available.
             if token[0] is Token.Text and token[1] == '':
                 return node
             if token[0] is Token.Text and '\n' in token[1]:
                 return node
 
-            # When handling Tag tokens, e.g. nested components, we need to know if we're at the start OR end of the Tag.
-            # Check for </ first and flag that this node will be the closing tag or not, if so and > is encountered
-            # then return this node since it is complete, this closes the scoped directive.
+            # When handling Tag tokens, e.g. nested components, we need to
+            # know if we're at the start OR end of the Tag. Check for '</'
+            # first and flag that this node will be the closing tag or not,
+            # if so and > is encountered then return this node since it is
+            # complete, this closes the scoped directive.
             if token[0] is Token.Name.Tag and token[1][0] == '<' and token[1][1] == '/':
                 node.closeTag = True
             if token[0] is Token.Name.Tag and token[1][0] == '>':
@@ -116,18 +122,21 @@ class Parser:
                 if node.closeTag:
                     return node
 
-                # Otherwise, we're starting a Tag instead, begin building out the children nodes for this node.
+                # Otherwise, we're starting a Tag instead, begin building out
+                # the children nodes for this node.
                 child = self.ParseNode(parent=node)
-                while child and child.closeTag == False:
+                while child and child.closeTag is False:
                     node.children.append(child)
                     child = self.ParseNode(parent=node)
 
-                # If the child was a </tag> node it, migrate it's tokens into posttokens for this node.
+                # If the child was a </tag> node it, migrate it's tokens into
+                # posttokens for this node.
                 if child and child.closeTag:
                     for pt in child.tokens:
                         node.posttokens.append(pt)
                 return node
         return None
+
 
 class ConfigFile:
     def __init__(self, file=None):
@@ -140,6 +149,5 @@ class ConfigFile:
     def __str__(self):
         s = ''
         for node in self._parser.nodes:
-            #s += "---{}---\n{}\n".format(node.type, str(node))
             s += "{}".format(node)
         return s
