@@ -69,26 +69,21 @@ class Node:
 
     def __str__(self):
         s = ''
-        if len(self.tokens) == 0:
-            return s
         for token in self.tokens:
             s += "{}".format(token[1])
         return s
 
-class ConfigFile:
-    def __init__(self, file=None):
-        self._nodes = []
-        self._file = file
-        if file:
-            with open(file, "r") as f:
-                data = f.read()
-            self._stream = pygments.lex(data, ApacheConfLexer())
+
+class Parser:
+    def __init__(self, data):
+        self.nodes = []
+        self._stream = pygments.lex(data, ApacheConfLexer())
+        node = self.ParseNode()
+        while node:
+            # if len(node.tokens) == 0:
+            #     break
+            self.nodes.append(node)
             node = self.ParseNode()
-            while node:
-                # if len(node.tokens) == 0:
-                #     break
-                self._nodes.append(node)
-                node = self.ParseNode()
 
     def ParseNode(self, parent=None):
         node = Node([], [], [], parent=parent)
@@ -134,10 +129,17 @@ class ConfigFile:
                 return node
         return None
 
+class ConfigFile:
+    def __init__(self, file=None):
+        self._file = file
+        if file:
+            with open(file, "r") as f:
+                data = f.read()
+        self._parser = Parser(data)
 
     def __str__(self):
         s = ''
-        for node in self._nodes:
+        for node in self._parser.nodes:
             #s += "---{}---\n{}\n".format(node.type, str(node))
             s += "{}".format(node)
         return s
