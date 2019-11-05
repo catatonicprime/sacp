@@ -1,4 +1,3 @@
-import code
 import re
 import pygments
 from pygments.lexers.configs import ApacheConfLexer
@@ -142,10 +141,3 @@ class ConfigFile:
             #s += "---{}---\n{}\n".format(node.type, str(node))
             s += "{}".format(node)
         return s
-
-# Get a stream of tokens!
-cf = ConfigFile(file="httpd_short.conf")
-print(cf, end="")
-
-code.interact(local=locals())
-
