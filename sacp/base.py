@@ -7,9 +7,9 @@ class DefaultFactory(NodeFactory):
         pass
 
     def build(self, node):
-        if node.typeToken is Token.Name.Tag and node.pretokens[-1][1].lower() == '<virtualhost':
+        if node.typeToken[0] is Token.Name.Tag and node.pretokens[-1][1].lower() == '<virtualhost':
             return VirtualHost(node.pretokens, node.children, node.posttokens, parent=node._parent)
-        if node.typeToken is Token.Name.Builtin and node.pretokens[-1][1].lower() == 'servername':
+        if node.typeToken[0] is Token.Name.Builtin and node.pretokens[-1][1].lower() == 'servername':
             return ServerName(node.pretokens, node.children, node.posttokens, parent=node._parent)
         return node
 
