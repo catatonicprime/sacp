@@ -60,12 +60,12 @@ class Node:
         return self._posttokens
 
     @property
-    def type(self):
-        # This node's type will always be identifiable in the pretokens
+    def typeToken(self):
+        # Same as type but includes the whole token.
         for token in self._pretokens:
             if token[0] is Token.Text and re.search(r'^\s+$', token[1]):
                 continue
-            return token[0]
+            return token
         return None
 
     def __str__(self):
@@ -75,14 +75,54 @@ class Node:
         return s
 
 
+class NodeFactory:
+    def __init__(self):
+        raise NotImplementedError
+
+    def build(self, node):
+        raise NotImplementedError
+
+
+class DefaultFactory(NodeFactory):
+    def __init__(self):
+        pass
+
+    def build(self, node):
+        if node.typeToken is Token.Name.Tag and node.pretokens[-1][1].lower() == '<virtualhost':
+            return VirtualHost(node.pretokens, node.children, node.posttokens, parent=node._parent)
+        if node.typeToken is Token.Name.Builtin and node.pretokens[-1][1].lower() == 'servername':
+            return ServerName(node.pretokens, node.children, node.posttokens, parent=node._parent)
+        return node
+
+
+class ServerName(Node):
+    @property
+    def ServerName(self):
+        regex = '((?P<scheme>[a-zA-Z]+)(://))?(?P<domain>[a-zA-Z_0-9.]+)(:(?P<port>[0-9]+))?\\s*$'
+        if re.search(regex, str(self)):
+            return re.search(regex, str(self))[0].strip()
+        return None
+
+
+class VirtualHost(Node):
+    @property
+    def ServerName(self):
+        for node in self.children:
+            if isinstance(node, ServerName):
+                return node
+
+
 class Parser:
-    def __init__(self, data):
+    def __init__(self, data, nodefactory=None):
+        # Use specified node generator to glenerate nodes or use the default.
+        self._nodefactory = nodefactory
+        if not self._nodefactory:
+            self._nodefactory = DefaultFactory()
+
         self.nodes = []
         self._stream = pygments.lex(data, ApacheConfLexer())
         node = self.ParseNode()
         while node:
-            # if len(node.tokens) == 0:
-            #     break
             self.nodes.append(node)
             node = self.ParseNode()
 
@@ -99,8 +139,13 @@ class Parser:
             # Nodes don't have types until their first non-whitespace token is
             # matched, this aggregates all the whitespace tokens to the front
             # of the node.
-            if not node.type:
+            if not node.typeToken:
                 continue
+
+            # We have enough information to know what type of node this is
+            # and we can combine this with the generator to build a more
+            # specific type of Node.
+            node = self._nodefactory.build(node)
 
             # The node has a type, the lexer will return either a Token.Text
             # with an empty OR newline string before the next node info is
@@ -139,7 +184,7 @@ class Parser:
 
 
 class ConfigFile:
-    def __init__(self, file=None):
+    def __init__(self, file=None, recurseIncludes=True):
         self._file = file
         if file:
             with open(file, "r") as f:
@@ -151,3 +196,26 @@ class ConfigFile:
         for node in self._parser.nodes:
             s += "{}".format(node)
         return s
+
+
+class NodeVisitor():
+    def visitNodes(nodes):
+        raise NotImplementedError
+
+
+class DefaultVistor(NodeVisitor):
+    def __init__(self, depth=0, indent="\t"):
+        super().__init__()
+        self.__depth = 0
+        self.__indent = indent
+
+    def visitNodes(self, nodes):
+        for node in nodes:
+            if isinstance(node, ServerName):
+                print ("ServerName found: {}".format(node.ServerName))
+
+            print ("Node type: {}{}".format(self.__indent * self.__depth, type(node)))
+            if node.children:
+                self.__depth += 1
+                self.visitNodes(node.children)
+                self.__depth -= 1
