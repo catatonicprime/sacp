@@ -48,6 +48,7 @@ class VirtualHost(Node):
             if isinstance(node, ServerName):
                 return node
 
+
 class Include(Node):
     @property
     def path(self):
