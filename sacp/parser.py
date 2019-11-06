@@ -20,7 +20,7 @@ class Parser:
             node = self.ParseNode()
 
     def ParseNode(self, parent=None):
-        node = Node([], [], [], parent=parent)
+        node = Node(parent=parent)
         # Flag that indicates we will be exiting a scoped directive after this
         # node completes building.
         closeTag = False

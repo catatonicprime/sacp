@@ -8,24 +8,24 @@ class DefaultFactory(NodeFactory):
 
     def build(self, node):
         if node.typeToken[0] is Token.Name.Tag and node.pretokens[-1][1].lower() == '<virtualhost':
-            return VirtualHost(node.pretokens, node.children, node.posttokens, parent=node._parent)
+            return VirtualHost(node=node, parent=node._parent)
         if node.typeToken[0] is Token.Name.Builtin and node.pretokens[-1][1].lower() == 'servername':
-            return ServerName(node.pretokens, node.children, node.posttokens, parent=node._parent)
+            return ServerName(node=node, parent=node._parent)
         return node
 
 
 class DefaultVistor(NodeVisitor):
     def __init__(self, depth=0, indent="\t"):
-        super().__init__()
         self.__depth = 0
         self.__indent = indent
 
     def visitNodes(self, nodes):
         for node in nodes:
+            print ("Node type: {}{}".format(self.__indent * self.__depth, type(node)))
+
             if isinstance(node, ServerName):
                 print ("ServerName found: {}".format(node.ServerName))
 
-            print ("Node type: {}{}".format(self.__indent * self.__depth, type(node)))
             if node.children:
                 self.__depth += 1
                 self.visitNodes(node.children)

@@ -22,12 +22,18 @@ class Node:
     [ServerName][ server][\n] -> children / pretokens
     [</VirtualHost][>][\n] -> posttokens
     """
-    def __init__(self, pretokens, children, posttokens, closeTag=False, parent=None):
+    def __init__(self, node=None, pretokens=None, children=None, posttokens=None, closeTag=False, parent=None):
         self._parent = parent
-        self._pretokens = pretokens
-        self._children = children
-        self._posttokens = posttokens
+        self._pretokens = pretokens or []
+        self._children = children or []
+        self._posttokens = posttokens or []
         self.closeTag = closeTag
+        if node:
+            self._parent = node._parent
+            self._pretokens = node._pretokens or []
+            self._children = node._children or []
+            self._posttokens = node._posttokens or []
+            self.closeTag = node.closeTag
 
     @property
     def tokens(self):
