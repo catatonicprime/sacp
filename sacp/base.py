@@ -13,16 +13,15 @@ class Parser:
 
         self.nodes = []
         self._stream = pygments.lex(data, ApacheConfLexer())
-        node = self.ParseNode()
+        node = self.parse()
         while node:
             self.nodes.append(node)
-            node = self.ParseNode()
+            node = self.parse()
 
-    def ParseNode(self, parent=None):
+    def parse(self, parent=None):
         node = Node(parent=parent)
         # Flag that indicates we will be exiting a scoped directive after this
         # node completes building.
-        closeTag = False
         for token in self._stream:
             if token[0] is Token.Error:
                 raise ValueError("Config has errors, bailing.")
@@ -31,7 +30,7 @@ class Parser:
             # Nodes don't have types until their first non-whitespace token is
             # matched, this aggregates all the whitespace tokens to the front
             # of the node.
-            if not node.typeToken:
+            if not node.type_token:
                 continue
 
             # We have enough information to know what type of node this is
@@ -61,10 +60,10 @@ class Parser:
 
                 # Otherwise, we're starting a Tag instead, begin building out
                 # the children nodes for this node.
-                child = self.ParseNode(parent=node)
+                child = self.parse(parent=node)
                 while child and child.closeTag is False:
                     node.children.append(child)
-                    child = self.ParseNode(parent=node)
+                    child = self.parse(parent=node)
 
                 # If the child was a </tag> node it, migrate it's tokens into
                 # posttokens for this node.
@@ -88,34 +87,35 @@ class ConfigFile(Node):
 
 class DefaultFactory(NodeFactory):
     def __init__(self):
+        super().__init__()
         pass
 
     def build(self, node):
-        if node.typeToken[0] is Token.Name.Tag and node.pretokens[-1][1].lower() == '<virtualhost':
+        if node.type_token[0] is Token.Name.Tag and node.pretokens[-1][1].lower() == '<virtualhost':
             return VirtualHost(node=node)
-        if node.typeToken[0] is Token.Name.Builtin and node.pretokens[-1][1].lower() == 'servername':
+        if node.type_token[0] is Token.Name.Builtin and node.pretokens[-1][1].lower() == 'servername':
             return ServerName(node=node)
-        if node.typeToken[0] is Token.Name.Builtin and node.pretokens[-1][1].lower() == 'include':
+        if node.type_token[0] is Token.Name.Builtin and node.pretokens[-1][1].lower() == 'include':
             return Include(node=node)
         return node
 
 
-class DefaultVistor(NodeVisitor):
-    def __init__(self, nodes=None, depth=0, indent="\t"):
+class DefaultVisitor(NodeVisitor):
+    def __init__(self, nodes=None):
         NodeVisitor.__init__(self, nodes=nodes)
-        self.__depth = 0
-        self.__indent = indent
 
-    def visitNodes(self, visitor):
+    def visit(self, visitor=None):
+        if not visitor:
+            return
         for node in self._nodes:
             visitor(node)
             if node.children:
-                DefaultVistor(node.children).visitNodes(visitor)
+                DefaultVisitor(node.children).visit(visitor)
 
 
 class ServerName(Node):
     @property
-    def ServerName(self):
+    def server_name(self):
         regex = '((?P<scheme>[a-zA-Z]+)(://))?(?P<domain>[a-zA-Z_0-9.]+)(:(?P<port>[0-9]+))?\\s*$'
         if re.search(regex, str(self)):
             return re.search(regex, str(self))[0].strip()
@@ -124,7 +124,7 @@ class ServerName(Node):
 
 class VirtualHost(Node):
     @property
-    def ServerName(self):
+    def server_name(self):
         for node in self.children:
             if isinstance(node, ServerName):
                 return node

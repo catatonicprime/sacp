@@ -22,12 +22,13 @@ class Node:
     [ServerName][ server][\n] -> children / pretokens
     [</VirtualHost][>][\n] -> posttokens
     """
-    def __init__(self, node=None, closeTag=False, parent=None):
+
+    def __init__(self, node=None, close_tag=False, parent=None):
         self._parent = parent
         self._pretokens = []
         self._children = []
         self._posttokens = []
-        self.closeTag = closeTag
+        self.closeTag = close_tag
         if node:
             self._parent = node._parent
             self._pretokens = node._pretokens or []
@@ -64,7 +65,7 @@ class Node:
         return self._posttokens
 
     @property
-    def typeToken(self):
+    def type_token(self):
         # Same as type but includes the whole token.
         for token in self._pretokens:
             if token[0] is Token.Text and re.search(r'^\s+$', token[1]):
@@ -81,7 +82,7 @@ class Node:
 
 class NodeFactory:
     def __init__(self):
-        raise NotImplementedError
+        pass
 
     def build(self, node):
         raise NotImplementedError
@@ -90,5 +91,6 @@ class NodeFactory:
 class NodeVisitor:
     def __init__(self, nodes=None):
         self._nodes = nodes
-    def visitNodes(visitor=None):
+
+    def visit(self, visitor=None):
         raise NotImplementedError
