@@ -73,6 +73,15 @@ class Node:
             return token
         return None
 
+    @property
+    def depth(self):
+        depth = 0
+        node = self._parent
+        while node:
+            depth += 1
+            node = node._parent
+        return depth
+
     def __str__(self):
         s = ''
         for token in self.tokens:
@@ -85,6 +94,9 @@ class NodeFactory:
         pass
 
     def build(self, node):
+        """
+        Used to build a begin building a new Node, is called as soon as a parser identifies enough information to construct a node.
+        """
         raise NotImplementedError
 
 

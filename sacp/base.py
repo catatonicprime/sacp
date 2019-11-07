@@ -33,18 +33,13 @@ class Parser:
             if not node.type_token:
                 continue
 
-            # We have enough information to know what type of node this is
-            # and we can combine this with the generator to build a more
-            # specific type of Node.
-            node = self._nodefactory.build(node)
-
             # The node has a type, the lexer will return either a Token.Text
             # with an empty OR newline string before the next node info is
             # available.
             if token[0] is Token.Text and token[1] == '':
-                return node
+                return self._nodefactory.build(node)
             if token[0] is Token.Text and '\n' in token[1]:
-                return node
+                return self._nodefactory.build(node)
 
             # When handling Tag tokens, e.g. nested components, we need to
             # know if we're at the start OR end of the Tag. Check for '</'
@@ -56,7 +51,7 @@ class Parser:
             if token[0] is Token.Name.Tag and token[1][0] == '>':
                 # If we're closing a tag it's time to return this node.
                 if node.closeTag:
-                    return node
+                    return self._nodefactory.build(node)
 
                 # Otherwise, we're starting a Tag instead, begin building out
                 # the children nodes for this node.
@@ -70,7 +65,7 @@ class Parser:
                 if child and child.closeTag:
                     for pt in child.tokens:
                         node.posttokens.append(pt)
-                return node
+                return self._nodefactory.build(node)
         return None
 
 
@@ -80,11 +75,11 @@ class DefaultFactory(NodeFactory):
         pass
 
     def build(self, node):
-        if node.type_token[0] is Token.Name.Tag and node.pretokens[-1][1].lower() == '<virtualhost':
+        if node.type_token[0] is Token.Name.Tag and node.type_token[1].lower() == '<virtualhost':
             return VirtualHost(node=node)
-        if node.type_token[0] is Token.Name.Builtin and node.pretokens[-1][1].lower() == 'servername':
+        if node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'servername':
             return ServerName(node=node)
-        if node.type_token[0] is Token.Name.Builtin and node.pretokens[-1][1].lower() == 'include':
+        if node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'include':
             return Include(node=node)
         return node
 
@@ -133,7 +128,10 @@ class ServerName(Node):
 class Include(Node):
     def __init__(self, node=None):
         Node.__init__(self, node=node)
-        print(glob.glob(self.path))
+        for path in glob.glob(self.path):
+            cf = ConfigFile(file=path)
+            cf._parent = self
+            self._children.append(cf)
 
     @property
     def path(self):
@@ -143,4 +141,4 @@ class Include(Node):
         s = ''
         for token in self.pretokens[index+1:]:
             s += "{}".format(token[1])
-        return s
+        return s.strip()
