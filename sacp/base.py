@@ -8,14 +8,17 @@ class DefaultFactory(NodeFactory):
 
     def build(self, node):
         if node.typeToken[0] is Token.Name.Tag and node.pretokens[-1][1].lower() == '<virtualhost':
-            return VirtualHost(node=node, parent=node._parent)
+            return VirtualHost(node=node)
         if node.typeToken[0] is Token.Name.Builtin and node.pretokens[-1][1].lower() == 'servername':
-            return ServerName(node=node, parent=node._parent)
+            return ServerName(node=node)
+        if node.typeToken[0] is Token.Name.Builtin and node.pretokens[-1][1].lower() == 'include':
+            return Include(node=node)
         return node
 
 
 class DefaultVistor(NodeVisitor):
     def __init__(self, depth=0, indent="\t"):
+        NodeVisitor.__init__(self)
         self.__depth = 0
         self.__indent = indent
 
