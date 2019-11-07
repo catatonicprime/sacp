@@ -105,4 +105,9 @@ class NodeVisitor:
         self._nodes = nodes
 
     def visit(self, visitor=None):
-        raise NotImplementedError
+        if not visitor:
+            return
+        for node in self._nodes:
+            visitor(node)
+            if node.children:
+                NodeVisitor(node.children).visit(visitor)

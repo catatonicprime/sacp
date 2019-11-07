@@ -1,7 +1,7 @@
-import pygments
 from pygments.lexers.configs import ApacheConfLexer
-import glob
 from .node import *
+import pygments
+import glob
 
 
 class Parser:
@@ -82,19 +82,6 @@ class DefaultFactory(NodeFactory):
         if node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'include':
             return Include(node=node)
         return node
-
-
-class DefaultVisitor(NodeVisitor):
-    def __init__(self, nodes=None):
-        NodeVisitor.__init__(self, nodes=nodes)
-
-    def visit(self, visitor=None):
-        if not visitor:
-            return
-        for node in self._nodes:
-            visitor(node)
-            if node.children:
-                DefaultVisitor(node.children).visit(visitor)
 
 
 class ConfigFile(Node):
