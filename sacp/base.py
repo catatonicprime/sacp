@@ -1,6 +1,6 @@
 import pygments
 from pygments.lexers.configs import ApacheConfLexer
-from pygments.token import Token
+import glob
 from .node import *
 
 
@@ -74,17 +74,6 @@ class Parser:
         return None
 
 
-class ConfigFile(Node):
-    def __init__(self, node=None, file=None):
-        Node.__init__(self, node=node)
-        self._file = file
-        if file:
-            with open(file, "r") as f:
-                data = f.read()
-        self._parser = Parser(data)
-        self._children = self._parser.nodes
-
-
 class DefaultFactory(NodeFactory):
     def __init__(self):
         super().__init__()
@@ -113,13 +102,15 @@ class DefaultVisitor(NodeVisitor):
                 DefaultVisitor(node.children).visit(visitor)
 
 
-class ServerName(Node):
-    @property
-    def server_name(self):
-        regex = '((?P<scheme>[a-zA-Z]+)(://))?(?P<domain>[a-zA-Z_0-9.]+)(:(?P<port>[0-9]+))?\\s*$'
-        if re.search(regex, str(self)):
-            return re.search(regex, str(self))[0].strip()
-        return None
+class ConfigFile(Node):
+    def __init__(self, node=None, file=None):
+        Node.__init__(self, node=node)
+        self._file = file
+        if file:
+            with open(file, "r") as f:
+                data = f.read()
+            self._parser = Parser(data)
+            self._children = self._parser.nodes
 
 
 class VirtualHost(Node):
@@ -130,10 +121,26 @@ class VirtualHost(Node):
                 return node
 
 
+class ServerName(Node):
+    @property
+    def server_name(self):
+        regex = '((?P<scheme>[a-zA-Z]+)(://))?(?P<domain>[a-zA-Z_0-9.]+)(:(?P<port>[0-9]+))?\\s*$'
+        if re.search(regex, str(self)):
+            return re.search(regex, str(self))[0].strip()
+        return None
+
+
 class Include(Node):
     def __init__(self, node=None):
         Node.__init__(self, node=node)
+        print(glob.glob(self.path))
 
     @property
     def path(self):
-        pass
+        if not self.type_token:
+            return None
+        index = self.pretokens.index(self.type_token)
+        s = ''
+        for token in self.pretokens[index+1:]:
+            s += "{}".format(token[1])
+        return s
