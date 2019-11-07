@@ -22,11 +22,11 @@ class Node:
     [ServerName][ server][\n] -> children / pretokens
     [</VirtualHost][>][\n] -> posttokens
     """
-    def __init__(self, node=None, pretokens=None, children=None, posttokens=None, closeTag=False, parent=None):
+    def __init__(self, node=None, closeTag=False, parent=None):
         self._parent = parent
-        self._pretokens = pretokens or []
-        self._children = children or []
-        self._posttokens = posttokens or []
+        self._pretokens = []
+        self._children = []
+        self._posttokens = []
         self.closeTag = closeTag
         if node:
             self._parent = node._parent
@@ -87,6 +87,8 @@ class NodeFactory:
         raise NotImplementedError
 
 
-class NodeVisitor():
-    def visitNodes(nodes):
+class NodeVisitor:
+    def __init__(self, nodes=None):
+        self._nodes = nodes
+    def visitNodes(visitor=None):
         raise NotImplementedError
