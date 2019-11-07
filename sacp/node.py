@@ -110,4 +110,5 @@ class NodeVisitor:
         for node in self._nodes:
             visitor(node)
             if node.children:
-                NodeVisitor(node.children).visit(visitor)
+                nv = NodeVisitor(node.children)
+                nv.visit(visitor)
