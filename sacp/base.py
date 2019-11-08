@@ -45,7 +45,7 @@ class ApacheConfLexer(RegexLexer):
              r'os|productonly|full|emerg|alert|crit|error|warn|'
              r'notice|info|debug|registry|script|inetd|standalone|'
              r'user|group)\b', Keyword),
-            (r'"([^"\\]*(?:\\.[^"\\]*)*)"', String.Double),
+            (r'"([^"\\]*(?:\\(.|[\n])[^"\\]*)*)"', String.Double),
             (r'[^\s"\\]+', Text)
         ],
     }
