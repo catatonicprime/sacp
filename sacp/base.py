@@ -26,7 +26,7 @@ class ApacheConfLexer(RegexLexer):
     tokens = {
         'root': [
             (r'\s+', Text),
-            (r'(#.*?)$', Comment),
+            (r'#(.*\\\n)+.*$|(#.*?)$', Comment),
             (r'(<[^\s>]+)(?:(\s+)(.*))?(>)',
              bygroups(Name.Tag, Text, String, Name.Tag)),
             (r'([a-z]\w*)(\s+)',
@@ -71,7 +71,6 @@ class Parser:
         # Flag that indicates we will be exiting a scoped directive after this
         # node completes building.
         for token in self._stream:
-            print(token)
             if token[0] is Token.Error:
                 raise ValueError("Config has errors, bailing.")
             node.pretokens.append(token)
