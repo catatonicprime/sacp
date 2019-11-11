@@ -127,6 +127,8 @@ class DefaultFactory(NodeFactory):
             return VirtualHost(node=node)
         if node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'servername':
             return ServerName(node=node)
+        if node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'serveralias':
+            return ServerAlias(node=node)
         if node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'include':
             return Include(node=node)
         return node
@@ -153,13 +155,30 @@ class VirtualHost(Node):
             if isinstance(node, ServerName):
                 return node
 
+    @property
+    def server_alias(self):
+        for node in self.children:
+            if isinstance(node, ServerAlias):
+                return node
+
 
 class ServerName(Node):
     @property
     def server_name(self):
         regex = '((?P<scheme>[a-zA-Z]+)(://))?(?P<domain>[a-zA-Z_0-9.]+)(:(?P<port>[0-9]+))?\\s*$'
-        if re.search(regex, str(self)):
-            return re.search(regex, str(self))[0].strip()
+        match = re.search(regex, str(self))
+        if match:
+            return match.group(0).strip()
+        return None
+
+
+class ServerAlias(Node):
+    @property
+    def server_alias(self):
+        regex = '(?P<domain>[a-zA-Z_0-9.]+)\\s*$'
+        match = re.search(regex, str(self))
+        if match:
+            return match.group(0).strip()
         return None
 
 
