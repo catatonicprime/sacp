@@ -86,7 +86,7 @@ class Parser:
             # available.
             if token[0] is Token.Text and token[1] == '':
                 return self._nodefactory.build(node)
-            if token[0] is Token.Text and '\n' in token[1]:
+            if token[0] is Token.Text and re.search('^\n+$', token[1]):
                 return self._nodefactory.build(node)
 
             # When handling Tag tokens, e.g. nested components, we need to
