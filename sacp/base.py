@@ -84,7 +84,7 @@ class Parser:
             # The node has a type, the lexer will return either a Token.Text
             # with an empty OR string comprised only of newlines before the next node info is
             # available.
-            if token[0] is Token.Text and (token[1] == '' or re.search('^\n+$', token[1])):
+            if token[0] is Token.Text and (token[1] == '' or re.search('^\n+\s*$', token[1])):
                 return self._nodefactory.build(node)
 
             # When handling Tag tokens, e.g. nested components, we need to
@@ -129,6 +129,8 @@ class DefaultFactory(NodeFactory):
             return ServerAlias(node=node)
         if node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'include':
             return Include(node=node)
+        if node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'includeoptional':
+            return IncludeOptional(node=node)
         return node
 
 
@@ -183,8 +185,8 @@ class ServerAlias(Node):
 class Include(Node):
     def __init__(self, node=None):
         Node.__init__(self, node=node)
-        # if len(glob.glob(self.path)) == 0:
-        #     raise ValueError("Include directive failed to include '{}'".format(self.path))
+        if len(glob.glob(self.path)) == 0:
+            raise ValueError("Include directive failed to include '{}'".format(self.path))
         for path in glob.glob(self.path):
             cf = ConfigFile(file=path)
             cf._parent = self
@@ -199,3 +201,12 @@ class Include(Node):
         for token in self.pretokens[index+1:]:
             s += "{}".format(token[1])
         return s.strip()
+
+
+class IncludeOptional(Include):
+    def __init__(self, node=None):
+        try:
+            Include.__init__(self, node=node)
+        except ValueError:
+            # Optional means we ignore when no files match the path and the ValueError exception is raised
+            pass
