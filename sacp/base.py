@@ -82,11 +82,9 @@ class Parser:
                 continue
 
             # The node has a type, the lexer will return either a Token.Text
-            # with an empty OR newline string before the next node info is
+            # with an empty OR string comprised only of newlines before the next node info is
             # available.
-            if token[0] is Token.Text and token[1] == '':
-                return self._nodefactory.build(node)
-            if token[0] is Token.Text and re.search('^\n+$', token[1]):
+            if token[0] is Token.Text and (token[1] == '' or re.search('^\n+$', token[1])):
                 return self._nodefactory.build(node)
 
             # When handling Tag tokens, e.g. nested components, we need to
