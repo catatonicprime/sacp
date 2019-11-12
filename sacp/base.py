@@ -8,6 +8,7 @@ from .node import *
 import pygments
 import glob
 
+
 # Stolen from pygments for the purposes of fixing...
 class ApacheConfLexer(RegexLexer):
     """
@@ -51,7 +52,6 @@ class ApacheConfLexer(RegexLexer):
     }
 
 
-
 class Parser:
     def __init__(self, data, nodefactory=None, parent=None):
         # Use specified node generator to glenerate nodes or use the default.
@@ -84,7 +84,7 @@ class Parser:
             # The node has a type, the lexer will return either a Token.Text
             # with an empty OR string comprised only of newlines before the next node info is
             # available.
-            if token[0] is Token.Text and (token[1] == '' or re.search('^\n+\s*$', token[1])):
+            if token[0] is Token.Text and (token[1] == '' or re.search(r'^\n+\s*$', token[1])):
                 return self._nodefactory.build(node)
 
             # When handling Tag tokens, e.g. nested components, we need to
@@ -112,6 +112,10 @@ class Parser:
                     for pt in child.tokens:
                         node.posttokens.append(pt)
                 return self._nodefactory.build(node)
+        if len(node.tokens) > 0:
+            # At the end of files we may sometimes have some white-space stragglers
+            # this if block captures those into a new node.
+            return node
         return None
 
 
@@ -143,6 +147,10 @@ class ConfigFile(Node):
                 data = f.read()
             self._parser = Parser(data, parent=self)
             self._children = self._parser.nodes
+
+    def write(self):
+        with open(self._file, "w") as self.__fh:
+            self.__fh.write(str(self))
 
 
 class VirtualHost(Node):
@@ -198,6 +206,18 @@ class Include(Node):
         for token in self.pretokens[index+1:]:
             s += "{}".format(token[1])
         return s.strip()
+
+    @property
+    def tokens(self):
+        """
+        :return: List of all the tokens for this node concatenated together, excluding children.
+        """
+        tokenList = []
+        for token in self._pretokens:
+            tokenList.append(token)
+        for token in self._posttokens:
+            tokenList.append(token)
+        return tokenList
 
 
 class IncludeOptional(Include):
