@@ -143,9 +143,6 @@ class ConfigFile(Node):
                 data = f.read()
             self._parser = Parser(data, parent=self)
             self._children = self._parser.nodes
-    
-    def __str__(self):
-        return str(self._file)
 
 
 class VirtualHost(Node):
