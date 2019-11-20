@@ -8,7 +8,7 @@ Here are some example usages. Note that these examples assume your current worki
 
 ## Parsing
 Parsing a config file is easy!
-```
+```python
 from sacp import *
 cf = ConfigFile(file="conf/httpd.conf")
 ```
@@ -16,7 +16,7 @@ This will automatically parse the httpd.conf from the current directory. Any dep
 
 ## Walking the nodes
 Visiting all the nodes is also easy!
-```
+```python
 from sacp import *
   
 def visit(node):
