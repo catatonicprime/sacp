@@ -10,6 +10,7 @@ import glob
 
 
 # Stolen from pygments for the purposes of fixing...
+# TODO: remove this class when pygments 2.5.0 is released.
 class ApacheConfLexer(RegexLexer):
     """
     Lexer for configuration files following the Apache config file
@@ -121,10 +122,11 @@ class Parser:
 
 class DefaultFactory(NodeFactory):
     def __init__(self):
-        super().__init__()
+        NodeFactory.__init__(self)
         pass
 
     def build(self, node):
+        # TODO: refactor the type_token stuff to be easier to read/understand.
         if node.type_token[0] is Token.Name.Tag and node.type_token[1].lower() == '<virtualhost':
             return VirtualHost(node=node)
         if node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'servername':
@@ -135,7 +137,32 @@ class DefaultFactory(NodeFactory):
             return Include(node=node)
         if node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'includeoptional':
             return IncludeOptional(node=node)
+        if node.type_token[0] is Token.Name.Builtin:
+            return Directive(node=node)
+        if node.type_token[0] is Token.Comment:
+            return Comment(node=node)
         return node
+
+
+class Directive(Node):
+    @property
+    def arguments(self):
+        """
+        return: Array of arguments following a directive. 
+        example: 'ServerName example.com' returns [u'example.com']
+        example: 'Deny from all' returns [u'from', u'all']
+        """
+        args = []
+        directiveIndex = self.tokens.index(self.type_token)
+        for token in self.tokens[directiveIndex+1:]:
+            if token[0] is Token.Text and token[1].isspace():
+                continue
+            args.append(token[1].strip())
+        return args
+
+
+class Comment(Node):
+    pass
 
 
 class ConfigFile(Node):
@@ -153,7 +180,7 @@ class ConfigFile(Node):
             self.__fh.write(str(self))
 
 
-class VirtualHost(Node):
+class VirtualHost(Directive):
     @property
     def server_name(self):
         for node in self.children:
@@ -167,7 +194,7 @@ class VirtualHost(Node):
                 return node
 
 
-class ServerName(Node):
+class ServerName(Directive):
     @property
     def server_name(self):
         regex = '((?P<scheme>[a-zA-Z]+)(://))?(?P<domain>[a-zA-Z_0-9.]+)(:(?P<port>[0-9]+))?\\s*$'
@@ -177,7 +204,7 @@ class ServerName(Node):
         return None
 
 
-class ServerAlias(Node):
+class ServerAlias(Directive):
     @property
     def server_alias(self):
         regex = '(?P<domain>[a-zA-Z_0-9.]+)\\s*$'
@@ -187,7 +214,7 @@ class ServerAlias(Node):
         return None
 
 
-class Include(Node):
+class Include(Directive):
     def __init__(self, node=None):
         Node.__init__(self, node=node)
         if len(glob.glob(self.path)) == 0:

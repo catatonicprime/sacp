@@ -66,7 +66,9 @@ class Node:
 
     @property
     def type_token(self):
-        # Same as type but includes the whole token.
+        """
+        :return: returns the first non-whitespace token for the node. This is the first indicator of the type for this node.
+        """
         for token in self._pretokens:
             if token[0] is Token.Text and re.search(r'^\s+$', token[1]):
                 continue
