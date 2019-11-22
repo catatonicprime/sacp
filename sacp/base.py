@@ -146,6 +146,10 @@ class DefaultFactory(NodeFactory):
 
 class Directive(Node):
     @property
+    def name(self):
+        return self.type_token[1]
+
+    @property
     def arguments(self):
         """
         return: Array of arguments following a directive. 
