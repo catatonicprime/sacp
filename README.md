@@ -23,7 +23,7 @@ def visit(node):
     print("{}{}".format(node.depth * " ", type(node)))
 
 cf = ConfigFile(file="conf/httpd.conf")
-NodeVisitor(cf.children).visit(visitor=visit)
+NodeVisitor([cf]).visit(visitor=visit)
 ```
 This visits all of the nodes in the config file, including it's children, and prints each node type with it's relative depth represented as well.
 
