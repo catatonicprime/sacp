@@ -28,4 +28,4 @@ NodeVisitor([cf]).visit(visitor=visit)
 This visits all of the nodes in the config file, including it's children, and prints each node type with it's relative depth represented as well.
 
 # Contribute
-Want to contribute? Awesome! Fork, code, and request a PR.
+Want to contribute? Awesome! Fork, code, and create a PR.
