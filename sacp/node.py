@@ -114,3 +114,17 @@ class NodeVisitor:
             if node.children:
                 nv = NodeVisitor(node.children)
                 nv.visit(visitor)
+
+
+class BFNodeVisitor(NodeVisitor):
+    def visit(self, visitor=None):
+        if not visitor:
+            return
+
+        for node in self._nodes:
+            visitor(node)
+
+        for node in self._nodes:
+            if node.children:
+                nv = NodeVisitor(node.children)
+                nv.visit(visitor)
