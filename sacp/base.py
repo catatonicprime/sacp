@@ -12,7 +12,7 @@ class Parser:
             self._nodefactory = DefaultFactory()
 
         self.nodes = []
-        self._stream = pygments.lex(data, ApacheConfLexer())
+        self._stream = pygments.lex(data, ApacheConfLexer(ensurenl=False))
         node = self.parse(parent=parent)
         while node:
             self.nodes.append(node)
