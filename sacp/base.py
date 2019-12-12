@@ -103,7 +103,7 @@ class Directive(Node):
     @property
     def arguments(self):
         """
-        return: Array of arguments following a directive. 
+        return: Array of arguments following a directive.
         example: 'ServerName example.com' returns [u'example.com']
         example: 'Deny from all' returns [u'from', u'all']
         """
