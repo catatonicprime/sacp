@@ -79,19 +79,24 @@ class DefaultFactory(NodeFactory):
     def build(self, node):
         # TODO: refactor the type_token stuff to be easier to read/understand.
         if node.type_token[0] is Token.Name.Tag and node.type_token[1].lower() == '<virtualhost':
-            return VirtualHost(node=node)
-        if node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'servername':
-            return ServerName(node=node)
-        if node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'serveralias':
-            return ServerAlias(node=node)
-        if node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'include':
-            return Include(node=node)
-        if node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'includeoptional':
-            return IncludeOptional(node=node)
-        if node.type_token[0] is Token.Name.Builtin:
-            return Directive(node=node)
-        if node.type_token[0] is Token.Comment:
-            return Comment(node=node)
+            node = VirtualHost(node=node)
+        elif node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'servername':
+            node = ServerName(node=node)
+        elif node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'serveralias':
+            node = ServerAlias(node=node)
+        elif node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'include':
+            node = Include(node=node)
+        elif node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'includeoptional':
+            node = IncludeOptional(node=node)
+        elif node.type_token[0] is Token.Name.Builtin:
+            node = Directive(node=node)
+        elif node.type_token[0] is Token.Comment:
+            node = Comment(node=node)
+
+        # Fix up children's parent.
+        for child in node.children:
+            child._parent = node
+
         return node
 
 
@@ -183,7 +188,7 @@ class Include(Directive):
     def path(self):
         if len(self.arguments) > 0:
             return self.arguments[0].strip()
-            return None
+        return None
 
     @property
     def tokens(self):
