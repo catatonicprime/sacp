@@ -53,6 +53,10 @@ class Node:
         return tokenList
 
     @property
+    def parent(self):
+        return self._parent
+
+    @property
     def pretokens(self):
         return self._pretokens
 
