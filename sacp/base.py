@@ -181,13 +181,9 @@ class Include(Directive):
 
     @property
     def path(self):
-        if not self.type_token:
+        if len(self.arguments) > 0:
+            return self.arguments[0].strip()
             return None
-        index = self.pretokens.index(self.type_token)
-        s = ''
-        for token in self.pretokens[index+1:]:
-            s += "{}".format(token[1])
-        return s.strip()
 
     @property
     def tokens(self):
