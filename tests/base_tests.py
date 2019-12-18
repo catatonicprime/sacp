@@ -1,8 +1,6 @@
-import sys
-sys.path.append('../')
-
 import unittest
 from sacp import *
+
 
 class TestInclude(unittest.TestCase):
     def test_path(self):
@@ -12,6 +10,7 @@ class TestInclude(unittest.TestCase):
         include = parser.nodes[0]
         self.assertTrue(isinstance(include, Include))
         self.assertEqual(include.path, 'files/small_vhost.conf', 'Include path does not match expected.')
+
 
 class TestParser(unittest.TestCase):
     def test_parents(self):
