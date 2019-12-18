@@ -35,6 +35,7 @@ class TestParser(unittest.TestCase):
         # Ensure the Directives parent is properly typed to a VirtualHost
         self.assertTrue(isinstance(directive._parent, VirtualHost))
 
+
 class TestNode(unittest.TestCase):
     def test_append_child(self):
         # Ensure we have some structure.
