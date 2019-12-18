@@ -7,11 +7,11 @@ import glob
 class Parser:
     def __init__(self, data, nodefactory=None, parent=None, acl=None):
         # Use specified node generator to generate nodes or use the default.
-        self._nodefactory = nodefactory
-        if self._nodefactory is None:
-            self._nodefactory = DefaultFactory()
-        if not isinstance(self._nodefactory, NodeFactory):
+        if nodefactory is None:
+            nodefactory = DefaultFactory()
+        if not isinstance(nodefactory, NodeFactory):
             raise ValueError("nodefactory must be of type NodeFactory")
+        self._nodefactory = nodefactory
 
         # Use specified lexer to generate tokens or use the default.
         if acl is None:
