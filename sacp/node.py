@@ -126,5 +126,5 @@ class BFNodeVisitor(NodeVisitor):
 
         for node in self._nodes:
             if node.children:
-                nv = NodeVisitor(node.children)
+                nv = BFNodeVisitor(node.children)
                 nv.visit(visitor)
