@@ -88,6 +88,10 @@ class Node:
             node = node._parent
         return depth
 
+    def append_child(self, node):
+        node._parent = self
+        self._children.append(node)
+
     def __str__(self):
         s = ''
         for token in self.tokens:
