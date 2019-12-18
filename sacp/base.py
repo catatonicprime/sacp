@@ -5,14 +5,25 @@ import glob
 
 
 class Parser:
-    def __init__(self, data, nodefactory=None, parent=None):
-        # Use specified node generator to glenerate nodes or use the default.
+    def __init__(self, data, nodefactory=None, parent=None, acl=None):
+        # Use specified node generator to generate nodes or use the default.
         self._nodefactory = nodefactory
-        if not self._nodefactory:
+        if self._nodefactory is None:
             self._nodefactory = DefaultFactory()
+        if not isinstance(self._nodefactory, NodeFactory):
+            raise ValueError("nodefactory must be of type NodeFactory")
 
+        # Use specified lexer to generate tokens or use the default.
+        if acl is None:
+            acl = ApacheConfLexer(ensurenl=False, stripnl=False)
+
+        if not isinstance(acl, ApacheConfLexer):
+            raise ValueError("acl must be of type ApacheConfLexer")
+
+        self._stream = pygments.lex(data, acl)
+
+        # Start parsing and tracking nodes
         self.nodes = []
-        self._stream = pygments.lex(data, ApacheConfLexer(ensurenl=False, stripnl=False))
         node = self.parse(parent=parent)
         while node:
             self.nodes.append(node)
