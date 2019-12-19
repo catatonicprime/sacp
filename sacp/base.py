@@ -182,7 +182,7 @@ class ServerAlias(Directive):
     @property
     def server_alias(self):
         regex = '(?P<domain>[a-zA-Z_0-9.]+)\\s*$'
-        match = re.search(regex, str(self))
+        match = re.search(regex, self.arguments[0])
         if match:
             return match.group(0).strip()
         return None
