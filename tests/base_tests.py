@@ -47,7 +47,7 @@ class TestParser(unittest.TestCase):
         self.assertTrue(isinstance(directive, Directive))
         multilineComment = configFile.children[2]
         self.assertTrue(isinstance(multilineComment, Comment))
-        self.assertTrue('\n' in str(multilineComment))
+        self.assertTrue('Multi-line\\\ncomment' in str(multilineComment))
 
 
 
