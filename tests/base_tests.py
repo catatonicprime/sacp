@@ -67,6 +67,14 @@ class TestNode(unittest.TestCase):
         self.assertEqual(node.parent, configFile)
 
 
+class TestServerName(unittest.TestCase):
+    def test_server_name(self):
+        configFile = ConfigFile(file='files/small_vhost.conf')
+        vhost = configFile.children[0]
+        sn = vhost.children[0]
+        self.assertEqual(sn.server_name, "github.com")
+
+
 class TestNodeVisitors(unittest.TestCase):
     def __init__(self, methodName="runTest"):
         (unittest.TestCase).__init__(self, methodName=methodName)
