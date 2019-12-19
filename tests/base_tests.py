@@ -35,6 +35,21 @@ class TestParser(unittest.TestCase):
         # Ensure the Directives parent is properly typed to a VirtualHost
         self.assertTrue(isinstance(directive._parent, VirtualHost))
 
+    def test_children(self):
+        configFile = ConfigFile(file='files/small_httpd.conf')
+        self.assertTrue(configFile)
+        self.assertTrue(isinstance(configFile, ConfigFile))
+        self.assertTrue(configFile.children)
+        self.assertGreaterEqual(len(configFile.children), 3)
+        comment = configFile.children[0]
+        self.assertTrue(isinstance(comment, Comment))
+        directive = configFile.children[1]
+        self.assertTrue(isinstance(directive, Directive))
+        multilineComment = configFile.children[2]
+        self.assertTrue(isinstance(multilineComment, Comment))
+        self.assertTrue('\n' in str(multilineComment))
+
+
 
 class TestNode(unittest.TestCase):
     def test_append_child(self):
