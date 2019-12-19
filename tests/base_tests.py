@@ -66,3 +66,17 @@ class TestNode(unittest.TestCase):
 
         # Ensure the node has been modified to have the correct parent.
         self.assertEqual(node.parent, configFile)
+
+
+class TestNodeVisitors(unittest.TestCase):
+    def depth_first_visitor(self, node):
+        pass
+    
+    def breadth_first_visitor(self, node):
+        pass
+
+    def test_node_visitor(self):
+        pass
+
+    def test_bfnode_visitor(self):
+        pass
