@@ -126,7 +126,7 @@ class Directive(Node):
         args = []
         directiveIndex = self.tokens.index(self.type_token)
         for token in self.tokens[directiveIndex+1:]:
-            if token[0] is Token.Text and token[1].isspace():
+            if token[0] is Token.Text and (not token[1] or token[1].isspace()):
                 continue
             args.append(token[1].strip())
         return args
@@ -168,10 +168,10 @@ class VirtualHost(Directive):
 class ServerName(Directive):
     @property
     def server_name(self):
-        regex = '((?P<scheme>[a-zA-Z]+)(://))?(?P<domain>[a-zA-Z_0-9.]+)(:(?P<port>[0-9]+))?\\s*$'
         if len(self.arguments) == 0:
             raise ValueError("ServerName directive does not have any arguments")
 
+        regex = '((?P<scheme>[a-zA-Z]+)(://))?(?P<domain>[a-zA-Z_0-9.]+)(:(?P<port>[0-9]+))?\\s*$'
         match = re.search(regex, self.arguments[0])
         if match:
             return match.group(0).strip()
@@ -181,6 +181,9 @@ class ServerName(Directive):
 class ServerAlias(Directive):
     @property
     def server_alias(self):
+        if len(self.arguments) == 0:
+            raise ValueError("ServerAlias directive does not have any arguments")
+
         regex = '(?P<domain>[a-zA-Z_0-9.]+)\\s*$'
         match = re.search(regex, self.arguments[0])
         if match:

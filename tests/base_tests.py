@@ -74,6 +74,14 @@ class TestServerName(unittest.TestCase):
         sn = vhost.children[0]
         self.assertEqual(sn.server_name, "github.com")
 
+    def test_empty_server_name(self):
+        configFile = ConfigFile(file='files/bad_vhost.conf')
+        vhost = configFile.children[0]
+        sn = vhost.children[0]
+        with self.assertRaises(ValueError):
+            err = sn.server_name
+
+
 
 class TestServerAlias(unittest.TestCase):
     def test_server_name(self):
@@ -81,6 +89,13 @@ class TestServerAlias(unittest.TestCase):
         vhost = configFile.children[0]
         sa = vhost.children[1]
         self.assertEqual(sa.server_alias, "www.github.com")
+
+    def test_empty_server_name(self):
+        configFile = ConfigFile(file='files/bad_vhost.conf')
+        vhost = configFile.children[0]
+        sa = vhost.children[1]
+        with self.assertRaises(ValueError):
+            err = sa.server_alias
 
 
 class TestNodeVisitors(unittest.TestCase):
