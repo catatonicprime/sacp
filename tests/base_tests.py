@@ -67,6 +67,15 @@ class TestNode(unittest.TestCase):
         self.assertEqual(node.parent, configFile)
 
 
+class TestDirective(unittest.TestCase):
+    def test_name(self):
+        configFile = ConfigFile(file='files/small_vhost.conf')
+        vhost = configFile.children[0]
+        self.assertEqual(vhost.name, "VirtualHost")
+        sn = vhost.children[0]
+        self.assertEqual(sn.name, "ServerName")
+
+
 class TestServerName(unittest.TestCase):
     def test_server_name(self):
         configFile = ConfigFile(file='files/small_vhost.conf')

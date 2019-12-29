@@ -174,6 +174,12 @@ class Directive(Node):
         return args
 
 
+class ScopedDirective(Directive):
+    @property
+    def name(self):
+        return super(ScopedDirective, self).name.split('<')[1]
+
+
 class Comment(Node):
     pass
 
@@ -193,7 +199,7 @@ class ConfigFile(Node):
             self.__fh.write(str(self))
 
 
-class VirtualHost(Directive):
+class VirtualHost(ScopedDirective):
     @property
     def server_name(self):
         for node in self.children:
