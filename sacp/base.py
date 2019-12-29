@@ -1,6 +1,6 @@
 from .node import *
 from pygments.lexer import RegexLexer, default, words, bygroups, include, using
-from pygments.token import Text, Comment, Operator, Keyword, Name, String, \
+from pygments.token import Text, Comment as pygComment, Operator, Keyword, Name, String, \
     Number, Punctuation, Whitespace, Literal
 import pygments
 import glob
@@ -22,7 +22,7 @@ class ApacheConfLexer(RegexLexer):
     tokens = {
         'root': [
             (r'\s+', Text),
-            (r'#(.*\\\n)+.*$|(#.*?)$', Comment),
+            (r'#(.*\\\n)+.*$|(#.*?)$', pygComment),
             (r'(<[^\s>]+)(?:(\s+)(.*))?(>)',
              bygroups(Name.Tag, Text, String, Name.Tag)),
             (r'[a-z]\w*', Name.Builtin, 'value'),
