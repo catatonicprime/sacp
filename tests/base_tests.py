@@ -1,4 +1,5 @@
 import unittest
+import os
 from sacp import *
 
 
@@ -105,6 +106,21 @@ class TestServerAlias(unittest.TestCase):
         sa = vhost.children[1]
         with self.assertRaises(ValueError):
             err = sa.server_alias
+
+
+class TestConfigFile(unittest.TestCase):
+    def test_write(self):
+        testPath = '/tmp/.small_vhost.conf'
+        configFile = ConfigFile(file='files/small_vhost.conf')
+        cf_str_left = str(configFile)
+        self.assertFalse(os.path.exists(testPath))
+        configFile._file = testPath
+        configFile.write()
+        self.assertTrue(os.path.exists(testPath))
+        configFile = ConfigFile(file=testPath)
+        cf_str_right = str(configFile)
+        self.assertEquals(cf_str_left, cf_str_right)
+        os.remove(testPath)
 
 
 class TestNodeVisitors(unittest.TestCase):
