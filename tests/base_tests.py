@@ -161,3 +161,23 @@ class TestNodeVisitors(unittest.TestCase):
         self.assertTrue(isinstance(self._bf_node_list[1][0], VirtualHost))
         self.assertTrue(isinstance(self._bf_node_list[2][0], ServerName))
         self.assertTrue(isinstance(self._bf_node_list[3][0], ServerName))
+
+
+class TestDefaultFactory(unittest.TestCase):
+    def test_factory_builds(self):
+        configFile = ConfigFile(file='files/factory.conf')
+        self.assertTrue(isinstance(configFile.children[0], Comment))
+        self.assertTrue(isinstance(configFile.children[1], Comment))
+        self.assertTrue(isinstance(configFile.children[2], Directive))
+        self.assertTrue(isinstance(configFile.children[3], Directive))
+        self.assertTrue(isinstance(configFile.children[4], ScopedDirective))
+        self.assertTrue(isinstance(configFile.children[5], Directory))
+        self.assertTrue(isinstance(configFile.children[6], Directory))
+        self.assertTrue(isinstance(configFile.children[7], DirectoryMatch))
+        self.assertTrue(isinstance(configFile.children[8], Files))
+        self.assertTrue(isinstance(configFile.children[9], Files))
+        self.assertTrue(isinstance(configFile.children[10], FilesMatch))
+        self.assertTrue(isinstance(configFile.children[11], Location))
+        self.assertTrue(isinstance(configFile.children[12], LocationMatch))
+        self.assertTrue(isinstance(configFile.children[13], Proxy))
+        self.assertTrue(isinstance(configFile.children[14], ProxyMatch))

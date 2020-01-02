@@ -5,6 +5,7 @@ from pygments.token import Text, Comment as pygComment, Operator, Keyword, Name,
 import pygments
 import glob
 
+
 class ApacheConfLexer(RegexLexer):
     """
     Lexer for configuration files following the Apache config file
@@ -140,6 +141,22 @@ class DefaultFactory(NodeFactory):
         if isinstance(node, ScopedDirective):
             if node.name.lower() == 'virtualhost':
                 node = VirtualHost(node=node)
+            if node.name.lower() == 'directory':
+                node = Directory(node=node)
+            if node.name.lower() == 'directorymatch':
+                node = DirectoryMatch(node=node)
+            if node.name.lower() == 'files':
+                node = Files(node=node)
+            if node.name.lower() == 'filesmatch':
+                node = FilesMatch(node=node)
+            if node.name.lower() == 'location':
+                node = Location(node=node)
+            if node.name.lower() == 'locationmatch':
+                node = LocationMatch(node=node)
+            if node.name.lower() == 'proxy':
+                node = Proxy(node=node)
+            if node.name.lower() == 'proxymatch':
+                node = ProxyMatch(node=node)
         if isinstance(node, Directive):
             if node.name.lower() == 'servername':
                 node = ServerName(node=node)
@@ -279,3 +296,35 @@ class IncludeOptional(Include):
         except ValueError:
             # Optional means we ignore when no files match the path and the ValueError exception is raised
             pass
+
+
+class Directory(ScopedDirective):
+    pass
+
+
+class DirectoryMatch(ScopedDirective):
+    pass
+
+
+class Files(ScopedDirective):
+    pass
+
+
+class FilesMatch(ScopedDirective):
+    pass
+
+
+class Location(ScopedDirective):
+    pass
+
+
+class LocationMatch(ScopedDirective):
+    pass
+
+
+class Proxy(ScopedDirective):
+    pass
+
+
+class ProxyMatch(ScopedDirective):
+    pass
