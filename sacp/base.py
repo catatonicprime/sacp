@@ -130,21 +130,25 @@ class DefaultFactory(NodeFactory):
         pass
 
     def build(self, node):
-        # TODO: refactor the type_token stuff to be easier to read/understand.
-        if node.type_token[0] is Token.Name.Tag and node.type_token[1].lower() == '<virtualhost':
-            node = VirtualHost(node=node)
-        elif node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'servername':
-            node = ServerName(node=node)
-        elif node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'serveralias':
-            node = ServerAlias(node=node)
-        elif node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'include':
-            node = Include(node=node)
-        elif node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'includeoptional':
-            node = IncludeOptional(node=node)
+        if node.type_token[0] is Token.Name.Tag:
+            node = ScopedDirective(node=node)
         elif node.type_token[0] is Token.Name.Builtin:
             node = Directive(node=node)
         elif node.type_token[0] is Token.Comment:
             node = Comment(node=node)
+
+        if isinstance(node, ScopedDirective):
+            if node.name.lower() == 'virtualhost':
+                node = VirtualHost(node=node)
+        if isinstance(node, Directive):
+            if node.name.lower() == 'servername':
+                node = ServerName(node=node)
+            elif node.name.lower() == 'serveralias':
+                node = ServerAlias(node=node)
+            elif node.name.lower() == 'include':
+                node = Include(node=node)
+            elif node.name.lower() == 'includeoptional':
+                node = IncludeOptional(node=node)
 
         # Fix up children's parent.
         for child in node.children:
