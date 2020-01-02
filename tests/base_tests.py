@@ -92,7 +92,6 @@ class TestServerName(unittest.TestCase):
             err = sn.server_name
 
 
-
 class TestServerAlias(unittest.TestCase):
     def test_server_name(self):
         configFile = ConfigFile(file='files/small_vhost.conf')
