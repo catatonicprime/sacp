@@ -126,40 +126,49 @@ class TestNodeVisitors(unittest.TestCase):
     def __init__(self, methodName="runTest"):
         (unittest.TestCase).__init__(self, methodName=methodName)
         self._parsed_nodes = ConfigFile(file='files/small_visitors.conf').children
-        self._df_node_visit_index = 0
-        self._bf_node_visit_index = 0
-        self._bf_node_list = []
-        self._df_node_list = []
 
-    def depth_first_visitor(self, node):
-        self._df_node_list.append((node, self._df_node_visit_index))
-        self._df_node_visit_index += 1
+    def reset_test_state(self):
+        self._node_visit_index = 0
+        self._node_list = []
 
-    def breadth_first_visitor(self, node):
-        self._bf_node_list.append((node, self._bf_node_visit_index))
-        self._bf_node_visit_index += 1
+    def visitor(self, node):
+        self._node_list.append((node, self._node_visit_index))
+        self._node_visit_index += 1
 
     def test_node_visitor(self):
-        NodeVisitor(self._parsed_nodes).visit(visitor=self.depth_first_visitor)
-        self.assertEqual(self._df_node_list[0][1], 0)
-        self.assertEqual(self._df_node_list[1][1], 1)
-        self.assertEqual(self._df_node_list[2][1], 2)
-        self.assertEqual(self._df_node_list[3][1], 3)
-        self.assertTrue(isinstance(self._df_node_list[0][0], VirtualHost))
-        self.assertTrue(isinstance(self._df_node_list[1][0], ServerName))
-        self.assertTrue(isinstance(self._df_node_list[2][0], VirtualHost))
-        self.assertTrue(isinstance(self._df_node_list[3][0], ServerName))
+        self.reset_test_state()
+        NodeVisitor(self._parsed_nodes).visit(visitor=self.visitor)
+        self.assertEqual(self._node_visit_index, 2)
+        self.assertEqual(self._node_list[0][1], 0)
+        self.assertEqual(self._node_list[1][1], 1)
+        self.assertTrue(isinstance(self._node_list[0][0], VirtualHost))
+        self.assertTrue(isinstance(self._node_list[1][0], VirtualHost))
+
+    def test_dfnode_visitor(self):
+        self.reset_test_state()
+        DFNodeVisitor(self._parsed_nodes).visit(visitor=self.visitor)
+        self.assertEqual(self._node_visit_index, 4)
+        self.assertEqual(self._node_list[0][1], 0)
+        self.assertEqual(self._node_list[1][1], 1)
+        self.assertEqual(self._node_list[2][1], 2)
+        self.assertEqual(self._node_list[3][1], 3)
+        self.assertTrue(isinstance(self._node_list[0][0], VirtualHost))
+        self.assertTrue(isinstance(self._node_list[1][0], ServerName))
+        self.assertTrue(isinstance(self._node_list[2][0], VirtualHost))
+        self.assertTrue(isinstance(self._node_list[3][0], ServerName))
 
     def test_bfnode_visitor(self):
-        BFNodeVisitor(self._parsed_nodes).visit(visitor=self.breadth_first_visitor)
-        self.assertEqual(self._bf_node_list[0][1], 0)
-        self.assertEqual(self._bf_node_list[1][1], 1)
-        self.assertEqual(self._bf_node_list[2][1], 2)
-        self.assertEqual(self._bf_node_list[3][1], 3)
-        self.assertTrue(isinstance(self._bf_node_list[0][0], VirtualHost))
-        self.assertTrue(isinstance(self._bf_node_list[1][0], VirtualHost))
-        self.assertTrue(isinstance(self._bf_node_list[2][0], ServerName))
-        self.assertTrue(isinstance(self._bf_node_list[3][0], ServerName))
+        self.reset_test_state()
+        BFNodeVisitor(self._parsed_nodes).visit(visitor=self.visitor)
+        self.assertEqual(self._node_visit_index, 4)
+        self.assertEqual(self._node_list[0][1], 0)
+        self.assertEqual(self._node_list[1][1], 1)
+        self.assertEqual(self._node_list[2][1], 2)
+        self.assertEqual(self._node_list[3][1], 3)
+        self.assertTrue(isinstance(self._node_list[0][0], VirtualHost))
+        self.assertTrue(isinstance(self._node_list[1][0], VirtualHost))
+        self.assertTrue(isinstance(self._node_list[2][0], ServerName))
+        self.assertTrue(isinstance(self._node_list[3][0], ServerName))
 
 
 class TestDefaultFactory(unittest.TestCase):
