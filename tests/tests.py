@@ -50,6 +50,12 @@ class TestParser(unittest.TestCase):
         self.assertTrue(isinstance(multilineComment, Comment))
         self.assertTrue('Multi-line\\\ncomment' in str(multilineComment))
 
+    def test_tokens(self):
+        node = Node()
+        node.append_children(Parser(data='<VirtualHost>Directive</VirtualHost>').nodes)
+        for token in node.tokens:
+            print(token)
+
 
 class TestNode(unittest.TestCase):
     def test_append_child(self):

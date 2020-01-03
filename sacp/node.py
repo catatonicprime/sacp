@@ -92,6 +92,10 @@ class Node:
         node._parent = self
         self._children.append(node)
 
+    def append_children(self, nodes):
+        for node in nodes:
+            self.append_child(node)
+
     def __str__(self):
         s = ''
         for token in self.tokens:
