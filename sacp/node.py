@@ -118,18 +118,12 @@ class NodeVisitor:
     def __init__(self, nodes=None):
         self._nodes = nodes
     
-    def visit(self, visitor=None):
-        if not visitor:
-            return
-
+    def visit(self, visitor):
         for node in self._nodes:
             visitor(node)
 
 class DFNodeVisitor(NodeVisitor):
-    def visit(self, visitor=None):
-        if not visitor:
-            return
-
+    def visit(self, visitor):
         for node in self._nodes:
             visitor(node)
             if node.children:
@@ -137,10 +131,7 @@ class DFNodeVisitor(NodeVisitor):
                 nv.visit(visitor)
 
 class BFNodeVisitor(NodeVisitor):
-    def visit(self, visitor=None):
-        if not visitor:
-            return
-
+    def visit(self, visitor):
         for node in self._nodes:
             visitor(node)
 
