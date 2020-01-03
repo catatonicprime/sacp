@@ -118,7 +118,7 @@ class TestConfigFile(unittest.TestCase):
         self.assertTrue(os.path.exists(testPath))
         configFile = ConfigFile(file=testPath)
         cf_str_right = str(configFile)
-        self.assertEquals(cf_str_left, cf_str_right)
+        self.assertEqual(cf_str_left, cf_str_right)
         os.remove(testPath)
 
 
