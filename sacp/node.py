@@ -74,7 +74,7 @@ class Node:
         :return: returns the first non-whitespace token for the node. This is the first indicator of the type for this node.
         """
         for token in self._pretokens:
-            if token[0] is Token.Text and re.search(r'^\s+$', token[1]):
+            if token[0] is Token.Text and token[1].isspace():
                 continue
             return token
         return None
