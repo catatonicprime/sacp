@@ -286,11 +286,11 @@ class Include(Directive):
     def tokens(self):
         """
         :return: List of all the tokens for this node concatenated together, excluding children.
+
+        Because Includes are directives (not scoped directives) they will never have posttokens.
         """
         tokenList = []
         for token in self._pretokens:
-            tokenList.append(token)
-        for token in self._posttokens:
             tokenList.append(token)
         return tokenList
 
