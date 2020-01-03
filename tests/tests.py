@@ -15,6 +15,33 @@ class TestInclude(unittest.TestCase):
         # Ensure the path matches the expected path above.
         self.assertEqual(include.path, 'files/small_vhost.conf', 'Include path does not match expected.')
 
+    def test_exceptions(self):
+        with self.assertRaises(IncludeError):
+            Parser(data='Include')
+        with self.assertRaises(ValueError):
+            Parser(data='Include nonexistent.conf')
+
+
+class TestIncludeOptional(unittest.TestCase):
+    def test_path(self):
+        # Ensure we have an 'Include' node
+        parser = Parser(data='IncludeOptional files/small_vhost.conf')
+        self.assertTrue(parser)
+        self.assertEqual(len(parser.nodes), 1, 'Parser returned incorrect number of nodes for IncludeOptional')
+        include = parser.nodes[0]
+        self.assertTrue(isinstance(include, IncludeOptional))
+
+        # Ensure the path matches the expected path above.
+        self.assertEqual(include.path, 'files/small_vhost.conf', 'IncludeOptional path does not match expected.')
+
+    def test_exceptions(self):
+        with self.assertRaises(IncludeError):
+            Parser(data='IncludeOptional')
+    
+    def test_failed_include(self):
+        Parser(data='IncludeOptional nonexistent.conf')
+
+
 
 class TestParser(unittest.TestCase):
     def test_parents(self):
@@ -35,6 +62,13 @@ class TestParser(unittest.TestCase):
 
         # Ensure the Directives parent is properly typed to a VirtualHost
         self.assertTrue(isinstance(directive._parent, VirtualHost))
+    def test_parser(self):
+        nodes = Parser(data="ServerName github.com").nodes
+        self.assertEqual(len(nodes), 1)
+        with self.assertRaises(ValueError):
+            Parser(data="ServerName github.com", nodefactory=0)
+        with self.assertRaises(ValueError):
+            Parser(data="ServerName github.com", acl=NodeFactory())
 
     def test_children(self):
         configFile = ConfigFile(file='files/small_httpd.conf')
@@ -73,6 +107,15 @@ class TestNode(unittest.TestCase):
         # Ensure the node has been modified to have the correct parent.
         self.assertEqual(node.parent, configFile)
 
+        # Test the depth of the node.
+        self.assertEqual(node.depth-1, node.parent.depth)
+
+    def test_node_factory(self):
+        nf = NodeFactory()
+        node = Node()
+        with self.assertRaises(NotImplementedError):
+            nf.build(node)
+
 
 class TestDirective(unittest.TestCase):
     def test_name(self):
@@ -89,6 +132,7 @@ class TestServerName(unittest.TestCase):
         vhost = configFile.children[0]
         sn = vhost.children[0]
         self.assertEqual(sn.server_name, "github.com")
+        self.assertEqual(vhost.server_name.server_name, "github.com")
 
     def test_empty_server_name(self):
         configFile = ConfigFile(file='files/bad_vhost.conf')
@@ -104,6 +148,7 @@ class TestServerAlias(unittest.TestCase):
         vhost = configFile.children[0]
         sa = vhost.children[1]
         self.assertEqual(sa.server_alias, "www.github.com")
+        self.assertEqual(vhost.server_alias.server_alias, "www.github.com")
 
     def test_empty_server_name(self):
         configFile = ConfigFile(file='files/bad_vhost.conf')
@@ -149,6 +194,7 @@ class TestNodeVisitors(unittest.TestCase):
         self.assertEqual(self._node_list[1][1], 1)
         self.assertTrue(isinstance(self._node_list[0][0], VirtualHost))
         self.assertTrue(isinstance(self._node_list[1][0], VirtualHost))
+
 
     def test_dfnode_visitor(self):
         self.reset_test_state()

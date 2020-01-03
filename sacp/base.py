@@ -260,9 +260,15 @@ class ServerAlias(Directive):
         return None
 
 
+class IncludeError(Exception):
+    pass
+
+
 class Include(Directive):
     def __init__(self, node=None):
         Node.__init__(self, node=node)
+        if not self.path:
+            raise IncludeError("path cannot be none")
         if len(glob.glob(self.path)) == 0:
             raise ValueError("Include directive failed to include '{}'".format(self.path))
         for path in glob.glob(self.path):
