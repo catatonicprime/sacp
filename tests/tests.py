@@ -62,6 +62,7 @@ class TestParser(unittest.TestCase):
 
         # Ensure the Directives parent is properly typed to a VirtualHost
         self.assertTrue(isinstance(directive._parent, VirtualHost))
+
     def test_parser(self):
         nodes = Parser(data="ServerName github.com").nodes
         self.assertEqual(len(nodes), 1)
@@ -83,13 +84,11 @@ class TestParser(unittest.TestCase):
         multilineComment = configFile.children[2]
         self.assertTrue(isinstance(multilineComment, Comment))
         self.assertTrue('Multi-line\\\ncomment' in str(multilineComment))
-
-    def test_tokens(self):
-        node = Node()
-        node.append_children(Parser(data='<VirtualHost>Directive</VirtualHost>').nodes)
-        for token in node.tokens:
-            print(token)
-
+    
+    def test_exceptions(self):
+        with self.assertRaises(ValueError):
+            configFile = ConfigFile(file='files/lex_errors.conf')
+            
 
 class TestNode(unittest.TestCase):
     def test_append_child(self):
@@ -109,6 +108,24 @@ class TestNode(unittest.TestCase):
 
         # Test the depth of the node.
         self.assertEqual(node.depth-1, node.parent.depth)
+
+    def test_append_children(self):
+        # Ensure we have some structure.
+        configFile = ConfigFile(file='files/small_vhost.conf')
+
+        # Ensure we have a new node, it can be blank.
+        node = Node()
+        self.assertTrue(node)
+
+        # Ensure the configFile can be successfully appended.
+        node.append_children([configFile])
+        self.assertGreaterEqual(node.children.index(configFile), 0)
+
+        # Ensure the configFile has been modified to have the correct parent.
+        self.assertEqual(configFile.parent, node)
+
+        # Test the depth of the node.
+        self.assertEqual(configFile.depth-1, configFile.parent.depth)
 
     def test_node_factory(self):
         nf = NodeFactory()
@@ -140,6 +157,11 @@ class TestServerName(unittest.TestCase):
         sn = vhost.children[0]
         with self.assertRaises(ValueError):
             err = sn.server_name
+    
+    def test_bad_serername(self):
+        nodes = Parser(data='ServerName invalid..domain').nodes
+        sn = nodes[0]
+        print (sn.server_name)
 
 
 class TestServerAlias(unittest.TestCase):
