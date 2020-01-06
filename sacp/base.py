@@ -235,11 +235,12 @@ class VirtualHost(ScopedDirective):
 
 
 class ServerName(Directive):
+    @property
     def isValid(self):
         if len(self.arguments) == 0 or len(self.arguments) > 1:
             return False
 
-        regex = '((?P<scheme>[a-zA-Z]+)(://))?(?P<domain>[a-zA-Z_0-9.]+)(:(?P<port>[0-9]+))?\\s*$'
+        regex = '^((?P<scheme>[a-zA-Z]+)(://))?(?P<domain>[a-zA-Z_0-9.]+)(:(?P<port>[0-9]+))?\\s*$'
         match = re.search(regex, self.arguments[0])
         if match:
             return True
@@ -252,11 +253,12 @@ class ServerAlias(Directive):
         if len(self.arguments) == 0:
             return False
 
-        regex = '(?P<domain>[a-zA-Z_0-9.]+)\\s*$'
-        match = re.search(regex, self.arguments[0])
-        if match:
-            return True
-        return False
+        regex = '^(?P<domain>[a-zA-Z_0-9.]+)\\s*$'
+        for name  in self.arguments:
+            match = re.search(regex, name)
+            if not match:
+                return False
+        return True
 
 
 class IncludeError(Exception):

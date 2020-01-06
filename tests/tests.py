@@ -148,36 +148,43 @@ class TestServerName(unittest.TestCase):
         configFile = ConfigFile(file='files/small_vhost.conf')
         vhost = configFile.children[0]
         sn = vhost.children[0]
-        self.assertEqual(sn.server_name, "github.com")
-        self.assertEqual(vhost.server_name.server_name, "github.com")
+        self.assertTrue(sn.isValid)
+        self.assertEqual(sn.arguments[0], "github.com")
+        self.assertEqual(vhost.server_name.arguments[0], "github.com")
 
     def test_empty_server_name(self):
         configFile = ConfigFile(file='files/bad_vhost.conf')
         vhost = configFile.children[0]
         sn = vhost.children[0]
-        with self.assertRaises(ValueError):
-            err = sn.server_name
+        self.assertFalse(sn.isValid)
     
-    def test_bad_serername(self):
-        nodes = Parser(data='ServerName invalid..domain').nodes
+    def test_bad_servername(self):
+        nodes = Parser(data='ServerName invalid/domain').nodes
         sn = nodes[0]
-        print (sn.server_name)
+        self.assertFalse(sn.isValid)
 
 
 class TestServerAlias(unittest.TestCase):
-    def test_server_name(self):
+    def test_server_alias(self):
         configFile = ConfigFile(file='files/small_vhost.conf')
         vhost = configFile.children[0]
         sa = vhost.children[1]
-        self.assertEqual(sa.server_alias, "www.github.com")
-        self.assertEqual(vhost.server_alias.server_alias, "www.github.com")
+        self.assertTrue(sa.isValid)
+        self.assertEqual(sa.arguments[0], "www.github.com")
+        self.assertEqual(vhost.server_alias.arguments[0], "www.github.com")
+        self.assertEqual(sa.arguments[1], "m.github.com")
+        self.assertEqual(vhost.server_alias.arguments[1], "m.github.com")
 
-    def test_empty_server_name(self):
+    def test_bad_server_alias(self):
+        nodes = Parser(data='ServerAlias www.github.com bad/alias github.com').nodes
+        sa = nodes[0]
+        self.assertFalse(sa.isValid)
+
+    def test_empty_server_alias(self):
         configFile = ConfigFile(file='files/bad_vhost.conf')
         vhost = configFile.children[0]
         sa = vhost.children[1]
-        with self.assertRaises(ValueError):
-            err = sa.server_alias
+        self.assertFalse(sa.isValid)
 
 
 class TestConfigFile(unittest.TestCase):
