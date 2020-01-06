@@ -235,29 +235,28 @@ class VirtualHost(ScopedDirective):
 
 
 class ServerName(Directive):
-    @property
-    def server_name(self):
-        if len(self.arguments) == 0:
-            raise ValueError("ServerName directive does not have any arguments")
+    def isValid(self):
+        if len(self.arguments) == 0 or len(self.arguments) > 1:
+            return False
 
         regex = '((?P<scheme>[a-zA-Z]+)(://))?(?P<domain>[a-zA-Z_0-9.]+)(:(?P<port>[0-9]+))?\\s*$'
         match = re.search(regex, self.arguments[0])
         if match:
-            return match.group(0).strip()
-        return None
+            return True
+        return False
 
 
 class ServerAlias(Directive):
     @property
-    def server_alias(self):
+    def isValid(self):
         if len(self.arguments) == 0:
-            raise ValueError("ServerAlias directive does not have any arguments")
+            return False
 
         regex = '(?P<domain>[a-zA-Z_0-9.]+)\\s*$'
         match = re.search(regex, self.arguments[0])
         if match:
-            return match.group(0).strip()
-        return None
+            return True
+        return False
 
 
 class IncludeError(Exception):
@@ -278,6 +277,9 @@ class Include(Directive):
 
     @property
     def path(self):
+        """
+        :return: The glob pattern used to load additional configs.
+        """
         if len(self.arguments) > 0:
             return self.arguments[0].strip()
         return None
@@ -286,9 +288,8 @@ class Include(Directive):
     def tokens(self):
         """
         :return: List of all the tokens for this node concatenated together, excluding children.
-
-        Because Includes are directives (not scoped directives) they will never have posttokens.
         """
+        # Because Includes are directives (not scoped directives) they will never have posttokens.
         tokenList = []
         for token in self._pretokens:
             tokenList.append(token)
