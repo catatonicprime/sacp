@@ -1,18 +1,72 @@
 from .node import *
-from pygments.lexers.configs import ApacheConfLexer
+from pygments.lexer import RegexLexer, default, words, bygroups, include, using
+from pygments.token import Text, Comment as pygComment, Operator, Keyword, Name, String, \
+    Number, Punctuation, Whitespace, Literal
 import pygments
 import glob
 
 
-class Parser:
-    def __init__(self, data, nodefactory=None, parent=None):
-        # Use specified node generator to glenerate nodes or use the default.
-        self._nodefactory = nodefactory
-        if not self._nodefactory:
-            self._nodefactory = DefaultFactory()
+class ApacheConfLexer(RegexLexer):
+    """
+    Lexer for configuration files following the Apache config file
+    format.
 
+    .. versionadded:: 0.6
+    """
+
+    name = 'ApacheConf'
+    aliases = ['apacheconf', 'aconf', 'apache']
+    filenames = ['.htaccess', 'apache.conf', 'apache2.conf']
+    mimetypes = ['text/x-apacheconf']
+    flags = re.MULTILINE | re.IGNORECASE
+
+    tokens = {
+        'root': [
+            (r'\s+', Text),
+            (r'#(.*\\\n)+.*$|(#.*?)$', pygComment),
+            (r'(<[^\s>]+)(?:(\s+)(.*))?(>)',
+             bygroups(Name.Tag, Text, String, Name.Tag)),
+            (r'[a-z]\w*', Name.Builtin, 'value'),
+            (r'\.+', Text),
+        ],
+        'value': [
+            (r'\\\n', Text),
+            (r'$', Text, '#pop'),
+            (r'\\', Text),
+            (r'[^\S\n]+', Text),
+            (r'\d+\.\d+\.\d+\.\d+(?:/\d+)?', Number),
+            (r'\d+', Number),
+            (r'/([a-z0-9][\w./-]+)', String.Other),
+            (r'(on|off|none|any|all|double|email|dns|min|minimal|'
+             r'os|productonly|full|emerg|alert|crit|error|warn|'
+             r'notice|info|debug|registry|script|inetd|standalone|'
+             r'user|group)\b', Keyword),
+            (r'"([^"\\]*(?:\\(.|[\n])[^"\\]*)*)"', String.Double),
+            (r'[^\s"\\]+', Text)
+        ],
+    }
+
+
+class Parser:
+    def __init__(self, data, nodefactory=None, parent=None, acl=None):
+        # Use specified node generator to generate nodes or use the default.
+        if nodefactory is None:
+            nodefactory = DefaultFactory()
+        if not isinstance(nodefactory, NodeFactory):
+            raise ValueError("nodefactory must be of type NodeFactory")
+        self._nodefactory = nodefactory
+
+        # Use specified lexer to generate tokens or use the default.
+        if acl is None:
+            acl = ApacheConfLexer(ensurenl=False, stripnl=False)
+
+        if not isinstance(acl, ApacheConfLexer):
+            raise ValueError("acl must be of type ApacheConfLexer")
+
+        self._stream = pygments.lex(data, acl)
+
+        # Start parsing and tracking nodes
         self.nodes = []
-        self._stream = pygments.lex(data, ApacheConfLexer(ensurenl=False, stripnl=False))
         node = self.parse(parent=parent)
         while node:
             self.nodes.append(node)
@@ -77,21 +131,41 @@ class DefaultFactory(NodeFactory):
         pass
 
     def build(self, node):
-        # TODO: refactor the type_token stuff to be easier to read/understand.
-        if node.type_token[0] is Token.Name.Tag and node.type_token[1].lower() == '<virtualhost':
-            node = VirtualHost(node=node)
-        elif node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'servername':
-            node = ServerName(node=node)
-        elif node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'serveralias':
-            node = ServerAlias(node=node)
-        elif node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'include':
-            node = Include(node=node)
-        elif node.type_token[0] is Token.Name.Builtin and node.type_token[1].lower() == 'includeoptional':
-            node = IncludeOptional(node=node)
+        if node.type_token[0] is Token.Name.Tag:
+            node = ScopedDirective(node=node)
         elif node.type_token[0] is Token.Name.Builtin:
             node = Directive(node=node)
         elif node.type_token[0] is Token.Comment:
             node = Comment(node=node)
+
+        if isinstance(node, ScopedDirective):
+            if node.name.lower() == 'virtualhost':
+                node = VirtualHost(node=node)
+            if node.name.lower() == 'directory':
+                node = Directory(node=node)
+            if node.name.lower() == 'directorymatch':
+                node = DirectoryMatch(node=node)
+            if node.name.lower() == 'files':
+                node = Files(node=node)
+            if node.name.lower() == 'filesmatch':
+                node = FilesMatch(node=node)
+            if node.name.lower() == 'location':
+                node = Location(node=node)
+            if node.name.lower() == 'locationmatch':
+                node = LocationMatch(node=node)
+            if node.name.lower() == 'proxy':
+                node = Proxy(node=node)
+            if node.name.lower() == 'proxymatch':
+                node = ProxyMatch(node=node)
+        if isinstance(node, Directive):
+            if node.name.lower() == 'servername':
+                node = ServerName(node=node)
+            elif node.name.lower() == 'serveralias':
+                node = ServerAlias(node=node)
+            elif node.name.lower() == 'include':
+                node = Include(node=node)
+            elif node.name.lower() == 'includeoptional':
+                node = IncludeOptional(node=node)
 
         # Fix up children's parent.
         for child in node.children:
@@ -115,10 +189,16 @@ class Directive(Node):
         args = []
         directiveIndex = self.tokens.index(self.type_token)
         for token in self.tokens[directiveIndex+1:]:
-            if token[0] is Token.Text and token[1].isspace():
+            if token[0] is Token.Text and (not token[1] or token[1].isspace()):
                 continue
             args.append(token[1].strip())
         return args
+
+
+class ScopedDirective(Directive):
+    @property
+    def name(self):
+        return super(ScopedDirective, self).name.split('<')[1]
 
 
 class Comment(Node):
@@ -140,7 +220,7 @@ class ConfigFile(Node):
             self.__fh.write(str(self))
 
 
-class VirtualHost(Directive):
+class VirtualHost(ScopedDirective):
     @property
     def server_name(self):
         for node in self.children:
@@ -156,27 +236,40 @@ class VirtualHost(Directive):
 
 class ServerName(Directive):
     @property
-    def server_name(self):
-        regex = '((?P<scheme>[a-zA-Z]+)(://))?(?P<domain>[a-zA-Z_0-9.]+)(:(?P<port>[0-9]+))?\\s*$'
-        match = re.search(regex, str(self))
+    def isValid(self):
+        if len(self.arguments) == 0 or len(self.arguments) > 1:
+            return False
+
+        regex = '^((?P<scheme>[a-zA-Z]+)(://))?(?P<domain>[a-zA-Z_0-9.]+)(:(?P<port>[0-9]+))?\\s*$'
+        match = re.search(regex, self.arguments[0])
         if match:
-            return match.group(0).strip()
-        return None
+            return True
+        return False
 
 
 class ServerAlias(Directive):
     @property
-    def server_alias(self):
-        regex = '(?P<domain>[a-zA-Z_0-9.]+)\\s*$'
-        match = re.search(regex, str(self))
-        if match:
-            return match.group(0).strip()
-        return None
+    def isValid(self):
+        if len(self.arguments) == 0:
+            return False
+
+        regex = '^(?P<domain>[a-zA-Z_0-9.]+)\\s*$'
+        for name  in self.arguments:
+            match = re.search(regex, name)
+            if not match:
+                return False
+        return True
+
+
+class IncludeError(Exception):
+    pass
 
 
 class Include(Directive):
     def __init__(self, node=None):
         Node.__init__(self, node=node)
+        if not self.path:
+            raise IncludeError("path cannot be none")
         if len(glob.glob(self.path)) == 0:
             raise ValueError("Include directive failed to include '{}'".format(self.path))
         for path in glob.glob(self.path):
@@ -186,6 +279,9 @@ class Include(Directive):
 
     @property
     def path(self):
+        """
+        :return: The glob pattern used to load additional configs.
+        """
         if len(self.arguments) > 0:
             return self.arguments[0].strip()
         return None
@@ -195,10 +291,9 @@ class Include(Directive):
         """
         :return: List of all the tokens for this node concatenated together, excluding children.
         """
+        # Because Includes are directives (not scoped directives) they will never have posttokens.
         tokenList = []
         for token in self._pretokens:
-            tokenList.append(token)
-        for token in self._posttokens:
             tokenList.append(token)
         return tokenList
 
@@ -210,3 +305,35 @@ class IncludeOptional(Include):
         except ValueError:
             # Optional means we ignore when no files match the path and the ValueError exception is raised
             pass
+
+
+class Directory(ScopedDirective):
+    pass
+
+
+class DirectoryMatch(ScopedDirective):
+    pass
+
+
+class Files(ScopedDirective):
+    pass
+
+
+class FilesMatch(ScopedDirective):
+    pass
+
+
+class Location(ScopedDirective):
+    pass
+
+
+class LocationMatch(ScopedDirective):
+    pass
+
+
+class Proxy(ScopedDirective):
+    pass
+
+
+class ProxyMatch(ScopedDirective):
+    pass

@@ -53,6 +53,10 @@ class Node:
         return tokenList
 
     @property
+    def parent(self):
+        return self._parent
+
+    @property
     def pretokens(self):
         return self._pretokens
 
@@ -70,7 +74,7 @@ class Node:
         :return: returns the first non-whitespace token for the node. This is the first indicator of the type for this node.
         """
         for token in self._pretokens:
-            if token[0] is Token.Text and re.search(r'^\s+$', token[1]):
+            if token[0] is Token.Text and token[1].isspace():
                 continue
             return token
         return None
@@ -83,6 +87,14 @@ class Node:
             depth += 1
             node = node._parent
         return depth
+
+    def append_child(self, node):
+        node._parent = self
+        self._children.append(node)
+
+    def append_children(self, nodes):
+        for node in nodes:
+            self.append_child(node)
 
     def __str__(self):
         s = ''
@@ -105,26 +117,25 @@ class NodeFactory:
 class NodeVisitor:
     def __init__(self, nodes=None):
         self._nodes = nodes
+    
+    def visit(self, visitor):
+        for node in self._nodes:
+            visitor(node)
 
-    def visit(self, visitor=None):
-        if not visitor:
-            return
+class DFNodeVisitor(NodeVisitor):
+    def visit(self, visitor):
         for node in self._nodes:
             visitor(node)
             if node.children:
-                nv = NodeVisitor(node.children)
+                nv = DFNodeVisitor(node.children)
                 nv.visit(visitor)
 
-
 class BFNodeVisitor(NodeVisitor):
-    def visit(self, visitor=None):
-        if not visitor:
-            return
-
+    def visit(self, visitor):
         for node in self._nodes:
             visitor(node)
 
         for node in self._nodes:
             if node.children:
-                nv = NodeVisitor(node.children)
+                nv = BFNodeVisitor(node.children)
                 nv.visit(visitor)
