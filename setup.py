@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
         name='sacp',
-        version='0.5',
+        version='0.6',
         install_requires=[
             'pygments'
         ],
