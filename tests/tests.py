@@ -17,7 +17,7 @@ class TestInclude(unittest.TestCase):
 
     def test_path_absolute_glob(self):
         # Ensure we have an 'Include' node
-        parser = Parser(data="Include '{}/files/glob/*.conf'".format(os.getcwd()))
+        parser = Parser(data="Include {}/files/glob/*.conf".format(os.getcwd()))
         self.assertTrue(parser)
         self.assertEqual(len(parser.nodes), 1, 'Parser returned incorrect number of nodes for Include')
         include = parser.nodes[0]
