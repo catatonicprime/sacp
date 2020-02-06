@@ -22,7 +22,6 @@ class TestInclude(unittest.TestCase):
         self.assertEqual(len(parser.nodes), 1, 'Parser returned incorrect number of nodes for Include')
         include = parser.nodes[0]
         self.assertTrue(isinstance(include, Include))
-        print(include.children[0])
 
     def test_exceptions(self):
         with self.assertRaises(IncludeError):
