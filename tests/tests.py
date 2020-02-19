@@ -45,10 +45,9 @@ class TestIncludeOptional(unittest.TestCase):
     def test_exceptions(self):
         with self.assertRaises(IncludeError):
             Parser(data='IncludeOptional')
-    
+
     def test_failed_include(self):
         Parser(data='IncludeOptional nonexistent.conf')
-
 
 
 class TestParser(unittest.TestCase):
@@ -92,11 +91,11 @@ class TestParser(unittest.TestCase):
         multilineComment = configFile.children[2]
         self.assertTrue(isinstance(multilineComment, Comment))
         self.assertTrue('Multi-line\\\ncomment' in str(multilineComment))
-    
+
     def test_exceptions(self):
         with self.assertRaises(ValueError):
             configFile = ConfigFile(file='files/lex_errors.conf')
-            
+
 
 class TestNode(unittest.TestCase):
     def test_append_child(self):
@@ -165,7 +164,7 @@ class TestServerName(unittest.TestCase):
         vhost = configFile.children[0]
         sn = vhost.children[0]
         self.assertFalse(sn.isValid)
-    
+
     def test_bad_servername(self):
         nodes = Parser(data='ServerName invalid/domain').nodes
         sn = nodes[0]
@@ -232,7 +231,6 @@ class TestNodeVisitors(unittest.TestCase):
         self.assertTrue(isinstance(self._node_list[0][0], VirtualHost))
         self.assertTrue(isinstance(self._node_list[1][0], VirtualHost))
 
-
     def test_dfnode_visitor(self):
         self.reset_test_state()
         DFNodeVisitor(self._parsed_nodes).visit(visitor=self.visitor)
@@ -278,6 +276,7 @@ class TestDefaultFactory(unittest.TestCase):
         self.assertTrue(isinstance(configFile.children[12], LocationMatch))
         self.assertTrue(isinstance(configFile.children[13], Proxy))
         self.assertTrue(isinstance(configFile.children[14], ProxyMatch))
+
 
 class TestScopedDirective(unittest.TestCase):
     def test_argument_child_tokens(self):

@@ -202,6 +202,7 @@ class ScopedDirective(Directive):
     def name(self):
         return super(ScopedDirective, self).name.split('<')[1]
 
+
 class Comment(Node):
     pass
 
@@ -255,7 +256,7 @@ class ServerAlias(Directive):
             return False
 
         regex = '^(?P<domain>[a-zA-Z_0-9.]+)\\s*$'
-        for name  in self.arguments:
+        for name in self.arguments:
             match = re.search(regex, name)
             if not match:
                 return False
