@@ -187,9 +187,11 @@ class Directive(Node):
         example: 'Deny from all' returns [u'from', u'all']
         """
         args = []
-        directiveIndex = self.tokens.index(self.type_token)
-        for token in self.tokens[directiveIndex+1:]:
+        directiveIndex = self._pretokens.index(self.type_token)
+        for token in self._pretokens[directiveIndex+1:]:
             if token[0] is Token.Text and (not token[1] or token[1].isspace()):
+                continue
+            if token[0] is Token.Name.Tag:
                 continue
             args.append(token[1].strip())
         return args
@@ -199,7 +201,6 @@ class ScopedDirective(Directive):
     @property
     def name(self):
         return super(ScopedDirective, self).name.split('<')[1]
-
 
 class Comment(Node):
     pass

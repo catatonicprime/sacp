@@ -278,3 +278,10 @@ class TestDefaultFactory(unittest.TestCase):
         self.assertTrue(isinstance(configFile.children[12], LocationMatch))
         self.assertTrue(isinstance(configFile.children[13], Proxy))
         self.assertTrue(isinstance(configFile.children[14], ProxyMatch))
+
+class TestScopedDirective(unittest.TestCase):
+    def test_argument_child_tokens(self):
+        configFile = ConfigFile(file='files/small_vhost.conf')
+        self.assertTrue(isinstance(configFile.children[0], ScopedDirective))
+        sd = configFile.children[0]
+        self.assertTrue(len(sd.arguments) == 1)
