@@ -284,3 +284,26 @@ class TestScopedDirective(unittest.TestCase):
         self.assertTrue(isinstance(configFile.children[0], ScopedDirective))
         sd = configFile.children[0]
         self.assertTrue(len(sd.arguments) == 1)
+
+
+class TestLineEnumerator(unittest.TestCase):
+    def test_line_numbers(self):
+        cf = ConfigFile(file='files/factory.conf')
+        le = LineEnumerator(nodes=[cf])
+        self.assertTrue(isinstance(le.lines[0][0], Comment))
+        self.assertTrue(le.lines[0][1] == 1)
+        self.assertTrue(isinstance(le.lines[1][0], Comment))
+        self.assertTrue(le.lines[1][1] == 2)
+        self.assertTrue(isinstance(le.lines[2][0], Directive))
+        self.assertTrue(le.lines[2][1] == 5)
+
+
+    def test_line_number_recurse(self):
+        parser = Parser(data='Directive simple\nInclude files/factory.conf\nDirective simple')
+        le = LineEnumerator(nodes=parser.nodes)
+        self.assertTrue(isinstance(le.lines[0][0], Directive))
+        self.assertTrue(le.lines[0][1] == 1)
+        self.assertTrue(isinstance(le.lines[1][0], Include))
+        self.assertTrue(le.lines[1][1] == 2)
+        self.assertTrue(isinstance(le.lines[-1][0], Directive))
+        self.assertTrue(le.lines[2][1] == 3)
