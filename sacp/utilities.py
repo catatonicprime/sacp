@@ -3,7 +3,7 @@ from .base import *
 
 class LineEnumerator(NodeVisitor):
     def __init__(self, nodes):
-        DFNodeVisitor.__init__(self, nodes=nodes)
+        NodeVisitor.__init__(self, nodes=nodes)
         self._lineno = 1
         self.lines = []
         self.visit(visitor=self.visitor)
@@ -12,7 +12,7 @@ class LineEnumerator(NodeVisitor):
         # We need to do depth-first node visit except for into Include or IncludeOptional.
         for node in self._nodes:
             visitor(node)
-            if isinstance(node, Include) or isinstance(node, IncludeOptional):
+            if isinstance(node, Include):
                 continue
             if node.children:
                 nv = LineEnumerator(node.children)

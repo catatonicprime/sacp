@@ -302,12 +302,22 @@ class TestLineEnumerator(unittest.TestCase):
         self.assertTrue(le.lines[2][1] == 5)
 
 
-    def test_line_number_recurse(self):
+    def test_line_number_recurse_include(self):
         parser = Parser(data='Directive simple\nInclude files/factory.conf\nDirective simple')
         le = LineEnumerator(nodes=parser.nodes)
         self.assertTrue(isinstance(le.lines[0][0], Directive))
         self.assertTrue(le.lines[0][1] == 1)
         self.assertTrue(isinstance(le.lines[1][0], Include))
+        self.assertTrue(le.lines[1][1] == 2)
+        self.assertTrue(isinstance(le.lines[-1][0], Directive))
+        self.assertTrue(le.lines[2][1] == 3)
+
+    def test_line_number_recurse_include_optional(self):
+        parser = Parser(data='Directive simple\nIncludeOptional files/factory.conf\nDirective simple')
+        le = LineEnumerator(nodes=parser.nodes)
+        self.assertTrue(isinstance(le.lines[0][0], Directive))
+        self.assertTrue(le.lines[0][1] == 1)
+        self.assertTrue(isinstance(le.lines[1][0], IncludeOptional))
         self.assertTrue(le.lines[1][1] == 2)
         self.assertTrue(isinstance(le.lines[-1][0], Directive))
         self.assertTrue(le.lines[2][1] == 3)
