@@ -29,6 +29,10 @@ class TestInclude(unittest.TestCase):
         with self.assertRaises(ValueError):
             Parser(data='Include nonexistent.conf')
 
+    def test_child_tokens_not_accessed(self):
+        include = Parser(data='Include files/small_vhost.conf').nodes[0]
+        self.assertEqual(len(include.tokens), 4)
+
 
 class TestIncludeOptional(unittest.TestCase):
     def test_path(self):
