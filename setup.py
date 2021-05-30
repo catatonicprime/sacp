@@ -7,7 +7,7 @@ setuptools.setup(
         name='sacp',
         version='0.6.3',
         install_requires=[
-            'pygments'
+            'pygments>=2.8.1'
         ],
         author='catatonicprime',
         author_email='catatonicprime@gmail.com',

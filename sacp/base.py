@@ -6,47 +6,6 @@ import pygments
 import glob
 
 
-class ApacheConfLexer(RegexLexer):
-    """
-    Lexer for configuration files following the Apache config file
-    format.
-
-    .. versionadded:: 0.6
-    """
-
-    name = 'ApacheConf'
-    aliases = ['apacheconf', 'aconf', 'apache']
-    filenames = ['.htaccess', 'apache.conf', 'apache2.conf']
-    mimetypes = ['text/x-apacheconf']
-    flags = re.MULTILINE | re.IGNORECASE
-
-    tokens = {
-        'root': [
-            (r'\s+', Text),
-            (r'#(.*\\\n)+.*$|(#.*?)$', pygComment),
-            (r'(<[^\s>]+)(?:(\s+)(.*))?(>)',
-             bygroups(Name.Tag, Text, String, Name.Tag)),
-            (r'[a-z]\w*', Name.Builtin, 'value'),
-            (r'\.+', Text),
-        ],
-        'value': [
-            (r'\\\n', Text),
-            (r'$', Text, '#pop'),
-            (r'\\', Text),
-            (r'[^\S\n]+', Text),
-            (r'\d+\.\d+\.\d+\.\d+(?:/\d+)?', Number),
-            (r'\d+', Number),
-            (r'/([*a-z0-9][*\w./-]+)', String.Other),
-            (r'(on|off|none|any|all|double|email|dns|min|minimal|'
-             r'os|productonly|full|emerg|alert|crit|error|warn|'
-             r'notice|info|debug|registry|script|inetd|standalone|'
-             r'user|group)\b', Keyword),
-            (r'"([^"\\]*(?:\\(.|[\n])[^"\\]*)*)"', String.Double),
-            (r'[^\s"\\]+', Text)
-        ],
-    }
-
-
 class Parser:
     def __init__(self, data, nodefactory=None, parent=None, acl=None):
         # Use specified node generator to generate nodes or use the default.
