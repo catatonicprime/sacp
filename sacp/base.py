@@ -1,5 +1,5 @@
 from .node import *
-from pygments.lexer import RegexLexer, default, words, bygroups, include, using
+from pygments.lexers.configs import ApacheConfLexer, default, words, bygroups, include, using
 from pygments.token import Text, Comment as pygComment, Operator, Keyword, Name, String, \
     Number, Punctuation, Whitespace, Literal
 import pygments
