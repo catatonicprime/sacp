@@ -49,7 +49,7 @@ class Parser:
             # The node has a type, the lexer will return either a Token.Text
             # with an empty OR string comprised only of newlines before the next node info is
             # available.
-            if token[0] is Token.Text and (token[1] == '' or re.search(r'^\n+\s*$', token[1])):
+            if token[0] is Token.Text.Whitespace and (token[1] == '' or "\n" in token[1]):
                 return self._nodefactory.build(node)
 
             # When handling Tag tokens, e.g. nested components, we need to
