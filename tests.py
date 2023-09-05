@@ -1,5 +1,6 @@
 import unittest
 import os
+import tempfile
 from sacp import *
 
 
@@ -200,7 +201,7 @@ class TestServerAlias(unittest.TestCase):
 
 class TestConfigFile(unittest.TestCase):
     def test_write(self):
-        testPath = '/tmp/.small_vhost.conf'
+        testPath = tempfile.TemporaryFile().name
         configFile = ConfigFile(file='files/small_vhost.conf')
         cf_str_left = str(configFile)
         self.assertFalse(os.path.exists(testPath))
