@@ -148,7 +148,7 @@ class Directive(Node):
         args = []
         directiveIndex = self._pretokens.index(self.type_token)
         for token in self._pretokens[directiveIndex+1:]:
-            if token[0] is Token.Text and (not token[1] or token[1].isspace()):
+            if token[0] is Token.Text:
                 continue
             if token[0] is Token.Name.Tag:
                 continue
