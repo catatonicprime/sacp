@@ -9,7 +9,7 @@ class TestInclude(unittest.TestCase):
         parser = Parser(data='Include files/small_vhost.conf')
         self.assertTrue(parser)
         self.assertEqual(len(parser.nodes), 1, 'Parser returned incorrect number of nodes for Include')
-        include = parser.nodes[0]
+        include = parser.nodes[1]
         self.assertTrue(isinstance(include, Include))
 
         # Ensure the path matches the expected path above.
@@ -31,7 +31,7 @@ class TestInclude(unittest.TestCase):
 
     def test_child_tokens_not_accessed(self):
         include = Parser(data='Include files/small_vhost.conf').nodes[0]
-        self.assertEqual(len(include.tokens), 4)
+        self.assertEqual(len(include.tokens), 3)
 
 
 class TestIncludeOptional(unittest.TestCase):
@@ -229,11 +229,11 @@ class TestNodeVisitors(unittest.TestCase):
     def test_node_visitor(self):
         self.reset_test_state()
         NodeVisitor(self._parsed_nodes).visit(visitor=self.visitor)
-        self.assertEqual(self._node_visit_index, 2)
+        self.assertEqual(self._node_visit_index, 3)
         self.assertEqual(self._node_list[0][1], 0)
         self.assertEqual(self._node_list[1][1], 1)
         self.assertTrue(isinstance(self._node_list[0][0], VirtualHost))
-        self.assertTrue(isinstance(self._node_list[1][0], VirtualHost))
+        self.assertTrue(isinstance(self._node_list[2][0], VirtualHost))
 
     def test_dfnode_visitor(self):
         self.reset_test_state()
