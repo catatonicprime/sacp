@@ -10,8 +10,8 @@ class Node:
         /     |     \
     pre - children - post
 
-    When processing tokens, e.g. when rendering, we process pre tokens first,
-    then the children nodes, then the post tokens.
+    When processing tokens, e.g. when rendering, we process pre Token(s) first,
+    then the children Node(s), then the post Token(s).
 
     Example:
     <VirtualHost *:80>
@@ -108,7 +108,7 @@ class NodeFactory:
 
     def build(self, node):
         """
-        Used to build a begin building a new Node, is called as soon as a parser identifies enough information to construct a node.
+        Used to begin building a new Node, is called as soon as a parser identifies enough information to construct a node.
         """
         raise NotImplementedError
 
