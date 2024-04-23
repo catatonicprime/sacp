@@ -56,7 +56,7 @@ class Parser:
                 for token in self._stream:
                     token_data = token[1]
                     node.pretokens.append(token)
-                    if '\n' in token_data:
+                    if '\n' in token_data and '\\\n' not in token_data:
                         break
                 return self._nodefactory.build(node)
 
