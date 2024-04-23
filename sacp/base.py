@@ -51,13 +51,13 @@ class Parser:
             # The node has a type, the lexer will return either a Token.Text
             # with an empty OR string comprised only of newlines before the next node info is
             # available.
-            if token_class is Token.Name.Builtin:
+            if token_class is Token.Name.Builtin or token_class is Token.Comment:
                 # Complete reading the line for directives
                 for token in self._stream:
                     token_data = token[1]
+                    node.pretokens.append(token)
                     if '\n' in token_data:
                         break
-                    node.pretokens.append(token)
                 return self._nodefactory.build(node)
 
             # When handling Tag tokens, e.g. nested components, we need to
@@ -156,7 +156,7 @@ class Directive(Node):
         args = []
         directiveIndex = self._pretokens.index(self.type_token)
         for token in self._pretokens[directiveIndex+1:]:
-            if token[0] is Token.Text:
+            if token[0] is Token.Text or token[0] is Token.Literal.String:
                 args.append(token[1].strip())
         return args
 
