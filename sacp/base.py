@@ -36,7 +36,9 @@ class Parser:
         # Flag that indicates we will be exiting a scoped directive after this
         # node completes building.
         for token in self._stream:
-            if token[0] is Token.Error:
+            token_class = token[0]
+            token_data = token[1]
+            if token_class is Token.Error:
                 raise ValueError("Config has errors, bailing.")
             node.pretokens.append(token)
 
@@ -49,7 +51,13 @@ class Parser:
             # The node has a type, the lexer will return either a Token.Text
             # with an empty OR string comprised only of newlines before the next node info is
             # available.
-            if token[0] is Token.Text.Whitespace and (token[1] == '' or "\n" in token[1]):
+            if token_class is Token.Name.Builtin:
+                # Complete reading the line for directives
+                for token in self._stream:
+                    token_data = token[1]
+                    if '\n' in token_data:
+                        break
+                    node.pretokens.append(token)
                 return self._nodefactory.build(node)
 
             # When handling Tag tokens, e.g. nested components, we need to
@@ -57,9 +65,9 @@ class Parser:
             # first and flag that this node will be the closing tag or not,
             # if so and > is encountered then return this node since it is
             # complete, this closes the scoped directive.
-            if token[0] is Token.Name.Tag and token[1][0] == '<' and token[1][1] == '/':
+            if token_class is Token.Name.Tag and token_data[0] == '<' and token_data[1] == '/':
                 node.closeTag = True
-            if token[0] is Token.Name.Tag and token[1][0] == '>':
+            if token_class is Token.Name.Tag and token_data[0] == '>':
                 # If we're closing a tag it's time to return this node.
                 if node.closeTag:
                     return self._nodefactory.build(node)
@@ -71,7 +79,7 @@ class Parser:
                     node.children.append(child)
                     child = self.parse(parent=node)
 
-                # If the child was a </tag> node it, migrate it's tokens into
+                # If the child was a </tag> node then migrate it's tokens into
                 # posttokens for this node.
                 if child and child.closeTag:
                     for pt in child.tokens:
@@ -149,10 +157,7 @@ class Directive(Node):
         directiveIndex = self._pretokens.index(self.type_token)
         for token in self._pretokens[directiveIndex+1:]:
             if token[0] is Token.Text:
-                continue
-            if token[0] is Token.Name.Tag:
-                continue
-            args.append(token[1].strip())
+                args.append(token[1].strip())
         return args
 
 
@@ -198,7 +203,7 @@ class VirtualHost(ScopedDirective):
 class ServerName(Directive):
     @property
     def isValid(self):
-        if len(self.arguments) == 0 or len(self.arguments) > 1:
+        if len(self.arguments) != 1:
             return False
 
         regex = '^((?P<scheme>[a-zA-Z]+)(://))?(?P<domain>[a-zA-Z_0-9.]+)(:(?P<port>[0-9]+))?\\s*$'
