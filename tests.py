@@ -230,11 +230,11 @@ class TestNodeVisitors(unittest.TestCase):
     def test_node_visitor(self):
         self.reset_test_state()
         NodeVisitor(self._parsed_nodes).visit(visitor=self.visitor)
-        self.assertEqual(self._node_visit_index, 3)
+        self.assertEqual(self._node_visit_index, 2)
         self.assertEqual(self._node_list[0][1], 0)
         self.assertEqual(self._node_list[1][1], 1)
         self.assertTrue(isinstance(self._node_list[0][0], VirtualHost))
-        self.assertTrue(isinstance(self._node_list[2][0], VirtualHost))
+        self.assertTrue(isinstance(self._node_list[1][0], VirtualHost))
 
     def test_dfnode_visitor(self):
         self.reset_test_state()
