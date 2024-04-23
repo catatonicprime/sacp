@@ -268,9 +268,12 @@ class TestDefaultFactory(unittest.TestCase):
         configFile = ConfigFile(file='files/factory.conf')
         self.assertTrue(isinstance(configFile.children[0], Comment))
         self.assertTrue(isinstance(configFile.children[1], Comment))
+        self.assertTrue('comment' in str(configFile.children[1]))
         self.assertTrue(isinstance(configFile.children[2], Directive))
         self.assertTrue(isinstance(configFile.children[3], Directive))
+        self.assertTrue('line' in str(configFile.children[3]))
         self.assertTrue(isinstance(configFile.children[4], ScopedDirective))
+        self.assertTrue(isinstance(configFile.children[4].children[0], Comment))
         self.assertTrue(isinstance(configFile.children[5], Directory))
         self.assertTrue(isinstance(configFile.children[6], Directory))
         self.assertTrue(isinstance(configFile.children[7], DirectoryMatch))
@@ -281,6 +284,7 @@ class TestDefaultFactory(unittest.TestCase):
         self.assertTrue(isinstance(configFile.children[12], LocationMatch))
         self.assertTrue(isinstance(configFile.children[13], Proxy))
         self.assertTrue(isinstance(configFile.children[14], ProxyMatch))
+
 
 
 class TestScopedDirective(unittest.TestCase):
