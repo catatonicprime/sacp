@@ -1,0 +1,14 @@
+config_file: (directive | scoped_directive | comment)+
+directive: scoped_directive | directive_name directive_parameters
+scoped_directive: "<" directive_name directive_parameters ">" config_file "</" directive_name ">"
+directive_name: IDENTIFIER
+comment: "#"/[^\n]*([^\n]*)*\n/
+directive_parameters: parameter*
+parameter: value | STRING
+value: /[^\s\r\n]+/
+IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_-]*/
+STRING: ESCAPED_STRING | SINGLE_QUOTED_STRING
+ESCAPED_STRING: /"([^"\\]|\\.)*"/
+SINGLE_QUOTED_STRING: /'([^'\\]|\\.)*'/
+%import common.WS
+%ignore WS

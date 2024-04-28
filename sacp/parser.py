@@ -4,23 +4,10 @@
 
 from lark import Lark
 
-httpd_config_grammar = r'''
-    config_file: (directive | comment)+
-    comment: "#" /[^\n]*(\\\\\n[^\n]*)*\n/
-    directive: directive_name directive_parameters | scoped_directive
-    scoped_directive: "<" directive_name directive_parameters ">"
-    close_scope: "</" directive_name ">"
-    directive_name: IDENTIFIER
-    directive_parameters: parameter+
-    parameter: value | STRING
-    value: /[^\s\r\n]+/
-    IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_-]*/
-    STRING: ESCAPED_STRING | SINGLE_QUOTED_STRING
-    ESCAPED_STRING: /"([^"\\]|\\.)*"/
-    SINGLE_QUOTED_STRING: /'([^'\\]|\\.)*'/
-    %import common.WS
-    %ignore WS
-'''
+# Load the grammar
+grammar = 'grammars/config.lark'
+with open(grammar, 'r') as grammar_file:
+  httpd_config_grammar = grammar_file.read()
 
 # Initialize Lark parser with the Apache HTTPd config grammar
 parser = Lark(httpd_config_grammar, start='config_file')
@@ -28,10 +15,10 @@ parser = Lark(httpd_config_grammar, start='config_file')
 # Test parsing
 config_file = '''
     # Single-line Comment
-    # Multi-line Com\\
-ment
-    ServerName "example\\
-.com"
+    # Multi-\
+line Comment
+
+    ServerName "example.com"
     DocumentRoot "/var/www/html"
     <Directory "/var/www/html">
         AllowOverride None
@@ -41,4 +28,7 @@ ment
 
 parsed_config = parser.parse(config_file)
 print(parsed_config)
+print ("--------------------")
+print(config_file)
+print ("--------------------")
 print(parsed_config.pretty())
